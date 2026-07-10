@@ -63,7 +63,7 @@ description: <what it does, concrete verbs> - <3-5 method keywords>. Use when <t
 
 The `description` is the only part of the skill every session sees — it alone decides whether the body ever loads. Front-load *when to use*, in the words a user would actually type.
 
-**Recipe:** `<what it does, concrete verbs> - <3–5 keyword nouns from the method>. Use when <trigger situations>.` Hard limit **≤200 characters** — claude.ai rejects longer on upload (limit owned by `claude-config-platform-reference`).
+**Recipe:** `<what it does, concrete verbs> - <3–5 keyword nouns from the method>. Use when <trigger situations>.` House limit **≤200 characters** — docs-advised and lint-enforced here; NOT rejected at upload (201 accepted verbatim, 2026-07-10 — facts owned by `claude-config-platform-reference` §5).
 
 **Good** — verbatim from `skills/root-cause/SKILL.md` (190 chars):
 
