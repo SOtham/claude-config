@@ -22,4 +22,4 @@ Get-ChildItem "$HOME\.claude\projects" -Recurse -Filter *.jsonl | Sort-Object La
 
 ## Provenance
 
-Written 2026-07-10. Baselines: experiment-log entries #6 (subagent 0/2 + clean near-miss), #8 (headless 2/3 with reminder, no flip; cumulative bare subagent loads 0/3). Detection instrument: `claude-config-validation` §2.
+Written 2026-07-10. Baselines: experiment-log entries #6 (subagent 0/2 + clean near-miss), #8 (headless 2/3 with reminder, no flip; cumulative bare subagent loads 0/4 per #8's correction; all-surface tally 0/9 per #10's). Detection instrument: `claude-config-validation` §2.

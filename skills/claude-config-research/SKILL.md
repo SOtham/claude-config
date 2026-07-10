@@ -91,4 +91,4 @@ Written 2026-07-08 against the repo state on that date (25 SKILL.md files on dis
 - Diagnostics scripts exist: `Get-ChildItem "$HOME\.claude\skills\claude-config-diagnostics\scripts"` (PowerShell)
 - M1 harness exists and reruns: `bash scripts/run-m1.sh <model-id>` (needs the `claude` CLI; set `CLAUDE=` to its path); compare against entry #3's 33/33
 - Experiment-log convention adoption: read `references\experiment-log.md` — if entries beyond #1 exist, the convention graduated from `candidate`; update §4
-- Milestone status: the experiment log is the source of truth — an M1/M2 entry there outdates the `open` labels above
+- Milestone status: the experiment log is the source of truth — statuses above must match its newest entries (M1/M2 achieved, M3 adopted as of 2026-07-10; a new entry there outdates any label here)

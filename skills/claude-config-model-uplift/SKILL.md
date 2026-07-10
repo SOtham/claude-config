@@ -25,7 +25,7 @@ The library cannot uplift a session it never reached, and an absent config fully
 
 ## Phase 1 — Session protocol: the uplift scaffold
 
-Open every lightweight-tier working session with this scaffold (status: **trialed, supported at n=3 per arm** — experiment-log entries #7 and #9, 2026-07-10: scaffolded Sonnet-class arms went 9/9 on the pre-declared observables across three tasks, loading the correct skill as their *first* action every time; bare arms never loaded a skill — 0/6 cumulative across entries #6–#9 — though they passed the other observables). It invents no doctrine — each point routes to a section of the global `CLAUDE.md`; quoted phrases are verbatim from it, so the session is held to rules it already carries:
+Open every lightweight-tier working session with this scaffold (status: **trialed, supported at n=3 per arm** — experiment-log entries #7 and #9, 2026-07-10: scaffolded Sonnet-class arms went 9/9 on the pre-declared observables across three tasks, loading the correct skill as their *first* action every time; bare arms never loaded a skill — unscaffolded loads 0/9 across all surfaces, authoritative tally in entry #10's correction — though they passed the other observables). It invents no doctrine — each point routes to a section of the global `CLAUDE.md`; quoted phrases are verbatim from it, so the session is held to rules it already carries:
 
 ```text
 This session runs on a lightweight tier. Hold yourself to CLAUDE.md, strictly:
