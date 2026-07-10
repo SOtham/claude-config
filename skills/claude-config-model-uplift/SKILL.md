@@ -5,7 +5,7 @@ description: Run cheaper-tier sessions at top-tier standard - config preflight, 
 
 # Claude-Config Model Uplift
 
-The campaign for this library's stated purpose (owner, 2026-07-07): make cheaper-tier sessions (e.g. today's Sonnet-class and below — dated examples of the lightweight tier) work at the standard the highest reasoning tier sets. It is decision-gated: each phase ends with an observable gate — proceed, branch, or escalate. Honesty rule: this project has **no measured adherence numbers yet**; every countermeasure below is status **candidate** unless a repo artifact proves it, and every expected observation is qualitative ("you should see X; if Y → branch") — never an invented percentage.
+The campaign for this library's stated purpose (owner, 2026-07-07): make cheaper-tier sessions (e.g. today's Sonnet-class and below — dated examples of the lightweight tier) work at the standard the highest reasoning tier sets. It is decision-gated: each phase ends with an observable gate — proceed, branch, or escalate. Honesty rule: **statuses are per-item and each cites its experiment-log entry** (`claude-config-research/references/experiment-log.md`); anything without a cited entry is **candidate**, and every expected observation without a measured number stays qualitative ("you should see X; if Y → branch") — never an invented percentage.
 
 ## Phase 0 — Preflight: prove the config is present
 
@@ -49,7 +49,7 @@ Keep tasks small and single-skill-shaped — one task ≈ one Skill Routing row;
 
 ## Phase 2 — Failure-mode table
 
-**Predicted failure classes — status candidate** until the eval harness measures them (`claude-config-research`) — except "Skills never load", which is now **measured**: **0/6** unscaffolded skill loads at Sonnet-class-and-below in harness sessions (entries #6–#9, 2026-07-10) — treat lever 2 (scaffold, itself trialed n=3) or lever 3 (explicit invocation) as required for cheap-tier sessions, not optional. Recognize each in the transcript, never from the session's self-description; ground truth for "did a skill load" is the transcript grep in `claude-config-validation` §2.
+**Predicted failure classes — status candidate** until the eval harness measures them (`claude-config-research`) — except "Skills never load", which is now **measured**: **0/9** unscaffolded skill loads across every scriptable surface (entries #6–#10; authoritative itemized tally: entry #10's correction line) — treat lever 2 (scaffold, itself trialed n=3) or lever 3 (explicit invocation) as required for cheap-tier sessions, not optional. Recognize each in the transcript, never from the session's self-description; ground truth for "did a skill load" is the transcript grep in `claude-config-validation` §2.
 
 | Failure class | Recognize in transcript | Immediate countermeasure | Re-anchor with |
 | --- | --- | --- | --- |
@@ -104,7 +104,7 @@ Work top-down; stop at the cheapest lever that closes the gap.
 
 ## Provenance and maintenance
 
-Written 2026-07-08 (zero measured adherence data existed then). 2026-07-10: first field data landed — entries #6 (natural phrasing: 0/2 skill loads, cheap tier) and #7 (scaffold A/B: 3/3 vs 2/3 observables) in `claude-config-research/references/experiment-log.md`; statuses above updated to match. Everything else stays candidate/open until the program produces more numbers. Re-verify before trusting:
+Written 2026-07-08 (zero measured adherence data existed then). 2026-07-10: field data landed — entries #6–#10 in `claude-config-research/references/experiment-log.md` (unscaffolded loads 0/9 itemized in entry #10's correction; scaffold A/Bs 9/9 vs 6/9 at n=3/arm; hook lever retired); statuses above updated to match. Everything uncited stays candidate until the program produces more numbers. Re-verify before trusting:
 
 - The six CLAUDE.md sections quoted here still exist (PowerShell, tested): `Select-String -Path "$HOME\.claude\CLAUDE.md" -Pattern '^## (Skill Routing|Planning Gate|Verification|Delegation|Terminal Operations|Future Compatibility)'` — expect 6 hits; re-check quoted phrases after any CLAUDE.md edit
 - Diagnostics scripts present and runnable (tested 2026-07-08: doctor HEALTHY, lint 0 FAIL on a complete tree; lint exits 1 while any skill is half-authored): the two Phase 0 invocations

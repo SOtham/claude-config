@@ -4,7 +4,8 @@
 Compact core of ~/.claude/CLAUDE.md for environments that don't load
 user-level config (e.g. Claude Code on the web, teammates' machines).
 Deep procedures live in the toolkit skills — full list in the
-claude-config README (core, workflow, and setup skills).
+claude-config README (the claude-config-* meta layer there is
+library-internal and irrelevant in other repos).
 -->
 
 - Correctness over speed. Never fabricate APIs, paths, flags, or docs — verify or say you're unsure. Label claims: **Verified** / **Inference** / **Assumption**.

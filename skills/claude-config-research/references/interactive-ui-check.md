@@ -1,6 +1,6 @@
 # Ready-to-run: interactive-UI skill-loading check (entry #3 follow-up c)
 
-**Status: not yet run** (as of 2026-07-10). Needs a human at the real Claude Code UI (terminal or IDE) — subagent-harness and headless surfaces are already measured (entries #6/#8: 0/3 natural-phrasing loads in subagents; headless inconsistent). This checks the one surface a script cannot drive: your own interactive sessions. ~10 minutes.
+**Status: not yet run** (as of 2026-07-10). Needs a human at the real Claude Code UI (terminal or IDE) — every scriptable surface is already measured: **0/9 unscaffolded loads** (authoritative itemized tally: experiment-log entry #10 correction; spans subagents, headless restricted, and headless full-tool in-repo — the one partial exception is the restricted-tools pilot recorded in entry #3's correction, 2/3). This checks the one surface a script cannot drive: your own interactive sessions. ~10 minutes. Run the three probes back-to-back with no other sessions in between — the detection snippet samples the newest transcripts.
 
 ## Protocol
 
@@ -16,9 +16,9 @@
 Get-ChildItem "$HOME\.claude\projects" -Recurse -Filter *.jsonl | Sort-Object LastWriteTime -Descending | Select-Object -First 6 | ForEach-Object { "{0}: {1}" -f $_.Name, ((Select-String -Path $_.FullName -Pattern '"skill":"([a-z-]+)"' -AllMatches).Matches.Value -join ',') }
 ```
 
-5. Record the outcome as a dated entry in `experiment-log.md`: per phrasing, which skill (if any) loaded. Compare against the subagent baseline (0/2 should-load) and headless baseline (1/2).
+5. Record the outcome as a dated entry in `experiment-log.md`: per phrasing, which skill (if any) loaded. Compare against the scriptable-surface tally (0/9, entry #10 correction) and the restricted-tools pilot (2/3, entry #3 correction).
 
-**Interpretation:** if the interactive UI also shows ~0 natural loads at your default tier, the scaffold / explicit `/name` invocation doctrine (entries #6–#8) extends to every surface, and CLAUDE.md's routing table is doing the heavy lifting only when a session bothers to consult it. If interactive loads are markedly better, surface differences matter and the uplift skill's Phase 0 should say so.
+**Interpretation:** if the interactive UI also shows ~0 natural loads at your default tier, the scaffold / explicit `/name` invocation doctrine (entries #6–#10) extends to every surface, and CLAUDE.md's routing table is doing the heavy lifting only when a session bothers to consult it. If interactive loads are markedly better, surface differences matter and the uplift skill's Phase 0 should say so.
 
 ## Provenance
 

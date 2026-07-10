@@ -13,10 +13,15 @@
 # Usage:   bash run-m1.sh <model-id> [outdir]
 # Example: bash run-m1.sh claude-haiku-4-5-20251001
 #          bash run-m1.sh claude-sonnet-5 /tmp/m1-sonnet
-# Requires: the `claude` CLI. Override its path with CLAUDE=/full/path/to/claude.exe if not on PATH.
+# Requires: the `claude` CLI (override path with CLAUDE=...), `python` or `python3` (corpus parser),
+#           and coreutils `timeout` (Git Bash provides both on Windows).
+# Scoring note: the answer is the FIRST [a-z0-9-] token of the result text — a verbose answer
+# ("the best match is loops") scores as FAIL by design; the prompt demands the bare name.
 set -u
 CLAUDE="${CLAUDE:-claude}"
 command -v "$CLAUDE" >/dev/null 2>&1 || { echo "claude CLI not found; set CLAUDE=/path/to/claude(.exe)"; exit 2; }
+PY=$(command -v python || command -v python3) || { echo "python/python3 required (corpus parser)"; exit 2; }
+command -v timeout >/dev/null 2>&1 || { echo "coreutils 'timeout' required (Git Bash provides it)"; exit 2; }
 MODEL="${1:?usage: run-m1.sh <model-id> [outdir]}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 CORPUS="$HERE/../references/trigger-cases.md"
@@ -27,7 +32,7 @@ NOTOOLS="Bash,Read,Glob,Grep,Edit,Write,Skill,WebFetch,WebSearch,Task,TodoWrite,
 RES="$OUT/results.csv"; echo "num,type,expected,answer,verdict" > "$RES"
 
 # Extract cases from the frozen markdown corpus: num|type|expected|phrasing
-python - "$CORPUS" > "$OUT/cases.txt" <<'PY'
+"$PY" - "$CORPUS" > "$OUT/cases.txt" <<'PY'
 import re,sys
 for line in open(sys.argv[1],encoding="utf-8"):
     m=re.match(r'\|\s*(\d+)\s*\|\s*(should-load|near-miss|discrimination)\s*\|\s*"(.*?)"\s*\|\s*(.*?)\s*\|',line)
@@ -36,6 +41,12 @@ for line in open(sys.argv[1],encoding="utf-8"):
         if typ=="near-miss": exp="none"
         print(f"{num}|{typ}|{exp}|{phr}")
 PY
+
+# Guard: a silent parse failure must not look like a completed run.
+rows=$(grep -c '|' "$OUT/cases.txt" 2>/dev/null); rows=${rows:-0}
+maxnum=$(cut -d'|' -f1 "$OUT/cases.txt" 2>/dev/null | sort -n | tail -1)
+[ "$rows" -gt 0 ] || { echo "corpus parse produced 0 cases - python or corpus format problem; aborting"; exit 2; }
+[ "$rows" -eq "${maxnum:-0}" ] || { echo "corpus parse mismatch: $rows rows but max case #$maxnum (a row was dropped - check quoting in trigger-cases.md); aborting"; exit 2; }
 
 pass=0; fail=0; total=0
 while IFS='|' read -r num type expected phrasing; do

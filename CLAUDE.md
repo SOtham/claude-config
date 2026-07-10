@@ -41,7 +41,7 @@ The personal skills in `~/.claude/skills/` carry the detailed methods. Load the 
 | Repo missing CLAUDE.md / `.claude` setup | `repo-setup` |
 | Broad exploration, long session, context filling up | `token-economy` |
 | Delegating to subagents | `orchestrate` |
-| Designing or hardening recurring/autonomous work (to schedule a run: bundled `/loop`) | `loops` |
+| Designing or hardening recurring/autonomous work (scheduling: bundled `/loop`; cron/unattended: `/schedule`) | `loops` |
 | Writing prompts, CLAUDE.md files, skills, agents for apps/other repos | `prompt-craft` |
 | Maintaining this config library — add/edit/retire a personal skill, CLAUDE.md or settings.json change, sync/upload | `claude-config-change-control` (routes onward: placement → `claude-config-architecture`; authoring → `claude-config-skill-authoring`) |
 | This Claude setup misbehaving — skill not loading, upload rejected, hook silent | `claude-config-debugging` |

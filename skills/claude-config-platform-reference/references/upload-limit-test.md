@@ -40,6 +40,8 @@ The probe lives in `%TEMP%`, never in this library — it must not be synced or 
 4. Delete the probe skill from claude.ai and from `%TEMP%`.
 5. Record the outcome: dated line in `SKILL.md` §5 replacing "undocumented", plus a dated line in `claude-config-research/references/experiment-log.md` if you want it in the program record.
 
+**Confound to rule out:** PS 5.1's `Out-File -Encoding utf8` writes a UTF-8 **BOM** — the probe SKILL.md starts with 3 extra bytes before `---`. If BOTH the 201 probe and the 200 control are rejected, suspect the BOM (a frontmatter parser that doesn't strip it), not the length: rebuild BOM-less with `[IO.File]::WriteAllText($path, $text, (New-Object System.Text.UTF8Encoding($false)))` and retry. To see the stored description after an accepted upload, open the skill's entry in the claude.ai skills list — that display is where truncation would show.
+
 ## Provenance
 
 Written 2026-07-10. Builder snippet executed and verified that day (entry path `zzz-limit-probe/SKILL.md`, description length 201). Sources: https://claude.com/docs/skills/how-to (200-char warning, fetched 2026-07-09 and 2026-07-10); https://github.com/anthropics/claude-code/issues/40121 (250-char listing truncation).
