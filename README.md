@@ -1,32 +1,35 @@
 # ~/.claude — Personal Claude Setup
 
-Maintained source lives in `C:\Dev\claude-config\` — a git repo with a private remote (`github.com/SOtham/claude-config`). The files below are symlinked into `~/.claude\` so Claude Code picks them up automatically.
+Maintained source is a **git clone of this repo** (private remote: `github.com/SOtham/claude-config`), linked or copied into `~/.claude\` so Claude Code picks it up automatically. `<clone>` below means wherever you put the clone.
+
+**Path convention:** the library's skills and docs use `C:\Dev\claude-config` in runnable examples — that is the *original machine's* clone root, kept concrete so commands stay copy-pasteable there. On any other install, substitute your clone path; every script derives its locations from the clone automatically.
 
 ## Install on a new machine
 
-1. `git clone https://github.com/SOtham/claude-config.git C:\Dev\claude-config` (any path works; scripts derive locations from the clone)
-2. `powershell -ExecutionPolicy Bypass -File C:\Dev\claude-config\install.ps1` — idempotent: creates the links below, backs up anything real it displaces, then runs the health check. File symlinks want Developer Mode or an elevated shell (the script falls back to copies and says so). **Don't want links at all?** Add `-Mode Copy`: real files instead (tested 2026-07-10 — fresh, refresh, and doctor paths) — trade-off: edits don't propagate; refresh = `git pull` + re-run; the doctor reports copy-mode as WARN, not FAIL. *(Link-mode fresh-machine path not yet exercised end-to-end; its no-op and health paths are tested.)*
-3. Review `settings.json` — `model` and `effortLevel` are personal preferences.
+1. `git clone https://github.com/SOtham/claude-config.git` — any destination works.
+2. `powershell -ExecutionPolicy Bypass -File <clone>\install.ps1` — idempotent: creates the links below, backs up anything real it displaces, then runs the health check. File symlinks want Developer Mode or an elevated shell (the script falls back to copies and says so). **Don't want links at all?** Add `-Mode Copy`: real files instead (tested 2026-07-10 — fresh, refresh, and doctor paths) — trade-off: edits don't propagate; refresh = `git pull` + re-run; the doctor reports copy-mode as WARN, not FAIL. *(Link-mode fresh-machine path not yet exercised end-to-end; its no-op and health paths are tested.)*
+3. Review `settings.json` — `model` and `effortLevel` are personal preferences. If your clone isn't at the convention path, also update the "Personal skills" line in `CLAUDE.md` (install.ps1 reminds you).
 4. For claude.ai/web parity: run `sync.ps1` and upload the `dist\` zips (see "Web availability").
 
 ## Layout
 
 ```
-C:\Dev\claude-config\       ← edit files here
+<clone>\                    ← the git clone; edit files here
 ├── CLAUDE.md               # global operating instructions, loaded every session (keep under ~120 lines — budget owned by its maintainer comment)
 ├── settings.json           # model, effort, enforced permission deny rules (secrets protection)
 ├── skills/<name>/          # personal skills — CANONICAL, edit SKILL.md here directly
+├── install.ps1             # links (or -Mode Copy: copies) everything below into ~/.claude
 ├── sync.ps1                # rebuilds dist/ zips from skills/
 ├── CLAUDE-SNIPPET.md       # compact rules block to paste into a repo's CLAUDE.md (for web sessions)
 └── README.md               # this file
 
-~/.claude\                  ← symlinks only (plus runtime dirs below)
-├── CLAUDE.md → C:\Dev\claude-config\CLAUDE.md
-├── settings.json → C:\Dev\claude-config\settings.json
-├── skills\ → C:\Dev\claude-config\skills\  (junction)
-├── sync.ps1 → C:\Dev\claude-config\sync.ps1
-├── CLAUDE-SNIPPET.md → C:\Dev\claude-config\CLAUDE-SNIPPET.md
-├── README.md → C:\Dev\claude-config\README.md
+~/.claude\                  ← links to the clone (default) or copies (-Mode Copy), plus runtime dirs
+├── CLAUDE.md → <clone>\CLAUDE.md
+├── settings.json → <clone>\settings.json
+├── skills\ → <clone>\skills\  (junction)
+├── sync.ps1 → <clone>\sync.ps1
+├── CLAUDE-SNIPPET.md → <clone>\CLAUDE-SNIPPET.md
+├── README.md → <clone>\README.md
 └── dist/<name>.zip         # built by sync.ps1, not symlinked (generated output)
 ```
 

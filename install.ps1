@@ -123,7 +123,7 @@ foreach ($e in $entries) {
 
 if ($src -ne 'C:\Dev\claude-config') {
     Write-Output ""
-    Write-Output ("note: this clone lives at '" + $src + "'. Library docs cite C:\Dev\claude-config as the canonical path; all scripts derive paths from the clone location, but update the 'Personal skills' line in CLAUDE.md if you keep this location.")
+    Write-Output ("note: this clone lives at '" + $src + "'. The library's runnable examples use C:\Dev\claude-config as the example clone root (README 'Path convention') - substitute your path when copy-pasting them, and update the 'Personal skills' line in CLAUDE.md to your clone location.")
 }
 
 $doctor = Join-Path $src 'skills\claude-config-diagnostics\scripts\doctor.ps1'

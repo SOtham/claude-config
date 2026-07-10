@@ -26,6 +26,8 @@ C:\Dev\claude-config\                     CANONICAL SOURCE — edit here (git re
 
 A *symlink* is a file-level link the OS resolves transparently; a *junction* is the Windows directory equivalent that needs no admin rights. Verified 2026-07-08: `~/.claude` holds 5 symlinks (`CLAUDE.md`, `settings.json`, `sync.ps1`, `CLAUDE-SNIPPET.md`, `README.md`) plus the `skills` junction, all resolving into `C:\Dev\claude-config`.
 
+**Path convention (README is the owner):** `C:\Dev\claude-config` throughout this library's skills denotes the clone root — the original machine's actual location, kept concrete so commands are copy-pasteable there. On another install, substitute your clone path; scripts (`install.ps1`, `sync.ps1`, diagnostics) self-derive from the clone and need no edits.
+
 | Surface | Delivery | Freshness |
 | --- | --- | --- |
 | Local Claude Code | `~/.claude` links → canonical files | Automatic — next session start |

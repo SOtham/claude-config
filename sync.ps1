@@ -1,7 +1,7 @@
 # sync.ps1 - Package ~/.claude/skills for claude.ai upload.
 #
-# Canonical source: C:\Dev\claude-config\skills\, reached via the ~/.claude
-# links (same files; local Claude Code picks edits up automatically).
+# Canonical source: the claude-config clone's skills\ folder, reached via the
+# ~/.claude links (same files; local Claude Code picks edits up automatically).
 # This script only rebuilds the upload zips: each skills/<name>/ folder becomes
 # dist/<name>.zip with the skill folder at the zip root and forward-slash entry
 # paths (Compress-Archive in PS 5.1 writes backslashes, which Linux extractors
