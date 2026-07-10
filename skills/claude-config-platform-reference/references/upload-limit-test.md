@@ -1,6 +1,6 @@
 # One-shot test: does claude.ai reject or truncate a >200-char skill description?
 
-**Status: not yet run** (as of 2026-07-10). Needs the claude.ai web UI, ~3 minutes. Settles the one undocumented fact in `SKILL.md` §5: the docs confirm the 200-char limit but say nothing about what happens at 201 — hard reject (upload fails) or silent truncation (accepted, description cut). Claude Code truncates its *own* `/skills` listing at 250 (GitHub anthropics/claude-code #40121), so truncation is plausible.
+**Status: attempt 1 run 2026-07-10 — rejected PRE-length by the BOM confound** ("SKILL.md must start with YAML frontmatter (---)"): the parser does not strip UTF-8 BOMs, and the PS 5.1 builder below writes one. That confound is now a **verified platform fact** (SKILL.md §5). The probe zip has been rebuilt BOM-less (python, at the same `%TEMP%` path) — the length question itself is still open; retry with the rebuilt zip. Needs the claude.ai web UI, ~3 minutes. Settles the one undocumented fact in `SKILL.md` §5: the docs confirm the 200-char limit but say nothing about what happens at 201 — hard reject (upload fails) or silent truncation (accepted, description cut). Claude Code truncates its *own* `/skills` listing at 250 (GitHub anthropics/claude-code #40121), so truncation is plausible.
 
 ## Build the probe zip (PowerShell 5.1 — tested 2026-07-10)
 

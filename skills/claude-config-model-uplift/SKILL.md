@@ -49,7 +49,7 @@ Keep tasks small and single-skill-shaped — one task ≈ one Skill Routing row;
 
 ## Phase 2 — Failure-mode table
 
-**Predicted failure classes — status candidate** until the eval harness measures them (`claude-config-research`) — except "Skills never load", which is now **measured**: **0/9** unscaffolded skill loads across every scriptable surface (entries #6–#10; authoritative itemized tally: entry #10's correction line) — treat lever 2 (scaffold, itself trialed n=3) or lever 3 (explicit invocation) as required for cheap-tier sessions, not optional. Recognize each in the transcript, never from the session's self-description; ground truth for "did a skill load" is the transcript grep in `claude-config-validation` §2.
+**Predicted failure classes — status candidate** until the eval harness measures them (`claude-config-research`) — except "Skills never load", which is now **measured and scoped**: **0/9** unscaffolded loads on scriptable surfaces at cheap tiers (entries #6–#10; authoritative tally: entry #10's correction), while an interactive-UI session at the *top* tier auto-loaded 1/1 (entry #11, tier-confounded, n=1). This campaign's audience is exactly the scriptable/cheap-tier case — treat lever 2 (scaffold, trialed n=3) or lever 3 (explicit invocation) as required there, not optional. Recognize each in the transcript, never from the session's self-description; ground truth for "did a skill load" is the transcript grep in `claude-config-validation` §2.
 
 | Failure class | Recognize in transcript | Immediate countermeasure | Re-anchor with |
 | --- | --- | --- | --- |
