@@ -25,7 +25,7 @@ The library cannot uplift a session it never reached, and an absent config fully
 
 ## Phase 1 — Session protocol: the uplift scaffold
 
-Open every lightweight-tier working session with this scaffold (status: candidate — first supporting field anecdote 2026-07-10, experiment-log entry #7: the scaffolded Sonnet-class arm hit all three Phase 1 gates including loading `root-cause` *before* any work and an honest verified/NOT-verified split under a tool outage; the bare arm skipped skill loading). It invents no doctrine — each point routes to a section of the global `CLAUDE.md`; quoted phrases are verbatim from it, so the session is held to rules it already carries:
+Open every lightweight-tier working session with this scaffold (status: **trialed, supported at n=3 per arm** — experiment-log entries #7 and #9, 2026-07-10: scaffolded Sonnet-class arms went 9/9 on the pre-declared observables across three tasks, loading the correct skill as their *first* action every time; bare arms never loaded a skill — 0/6 cumulative across entries #6–#9 — though they passed the other observables). It invents no doctrine — each point routes to a section of the global `CLAUDE.md`; quoted phrases are verbatim from it, so the session is held to rules it already carries:
 
 ```text
 This session runs on a lightweight tier. Hold yourself to CLAUDE.md, strictly:
@@ -49,7 +49,7 @@ Keep tasks small and single-skill-shaped — one task ≈ one Skill Routing row;
 
 ## Phase 2 — Failure-mode table
 
-**Predicted failure classes — status candidate** until the eval harness measures them (`claude-config-research`) — except "Skills never load", which is now **measured**: 0/2 natural-phrasing skill loads at the cheap tier in harness sessions (entry #6, 2026-07-10) — treat levers 2/3 as required for cheap-tier sessions, not optional. Recognize each in the transcript, never from the session's self-description; ground truth for "did a skill load" is the transcript grep in `claude-config-validation` §2.
+**Predicted failure classes — status candidate** until the eval harness measures them (`claude-config-research`) — except "Skills never load", which is now **measured**: **0/6** unscaffolded skill loads at Sonnet-class-and-below in harness sessions (entries #6–#9, 2026-07-10) — treat lever 2 (scaffold, itself trialed n=3) or lever 3 (explicit invocation) as required for cheap-tier sessions, not optional. Recognize each in the transcript, never from the session's self-description; ground truth for "did a skill load" is the transcript grep in `claude-config-validation` §2.
 
 | Failure class | Recognize in transcript | Immediate countermeasure | Re-anchor with |
 | --- | --- | --- | --- |
@@ -83,10 +83,10 @@ Work top-down; stop at the cheapest lever that closes the gap.
 | # | Lever | Cost | Status |
 | --- | --- | --- | --- |
 | 1 | Config-only: presence verified (Phase 0), routing table already in CLAUDE.md | Minutes — already built; just verify | Structure verified 2026-07-08; uplift effect candidate |
-| 2 | Session scaffold — the Phase 1 paste | One paste per session | candidate + first supporting anecdote (entry #7) |
+| 2 | Session scaffold — the Phase 1 paste | One paste per session | **trialed, supported n=3** (entries #7, #9) — the strongest measured lever |
 | 3 | Explicit skill invocation in the task prompt (e.g. "/root-cause") | Near zero per task | candidate |
 | 4 | Orchestrated split: strong plans/reviews, cheap executes (Phase 3) | Highest setup: task contracts + review loop (`orchestrate`) | candidate |
-| 5 | Hook-based enforcement, e.g. a hook injecting scaffold reminders as context | `settings.json` change — the highest change gate (`claude-config-change-control`) | open idea — hook events are documented (`claude-config-platform-reference` §3) but nothing is designed, built, or verified; do NOT present as available |
+| 5 | Hook-based enforcement, e.g. a hook injecting scaffold reminders as context | `settings.json` change — the highest change gate (`claude-config-change-control`) | **retired as designed** (entry #8, 2026-07-10): a `UserPromptSubmit` reminder hook fired in headless but changed nothing (2/3 = baseline), and does NOT fire for subagent task prompts at all. A `SessionStart`-scoped variant remains untested. Do not rebuild without a new pre-registered experiment |
 
 ## Fenced wrong paths
 

@@ -44,7 +44,7 @@ Steps verified against README "Editing a skill" and CLAUDE.md Environment Facts,
 1. **Edit the canonical source** under `C:\Dev\claude-config` (editing via the `~/.claude` symlinks/junction hits the same files).
 2. **Structural check** — run the health/lint scripts per `claude-config-diagnostics`.
 3. **Behavioral check** — where behavior changed, produce the evidence per `claude-config-validation`.
-   **Regression gate (M3, adopted 2026-07-10)** — for any change to a skill `description` or a CLAUDE.md routing row, also run the trigger-recall suite before shipping: `bash "$HOME/.claude/skills/claude-config-research/scripts/run-m1.sh" <lightweight-model-id>` (needs the `claude` CLI; set `CLAUDE=` to its path). Zero unexplained regressions against the latest experiment-log baseline; an *intentional* re-routing must be pre-registered and recorded there (pattern: entry #4). Corpus is append-only — a changed description gets a new case, never a reworded old one.
+   **Regression gate (M3, adopted 2026-07-10)** — for any change to a skill `description` or a CLAUDE.md routing row, also run the trigger-recall suite before shipping: `bash "$HOME/.claude/skills/claude-config-research/scripts/run-m1.sh" <lightweight-model-id>` (needs the `claude` CLI; set `CLAUDE=` to its path). Zero unexplained regressions against the latest experiment-log baseline; an *intentional* re-routing must be pre-registered and recorded there (pattern: entry #4). Corpus is append-only — a changed description gets a new case, never a reworded old one. The gate is deliberately manual: hook-based automation was tested and retired (experiment-log entry #8).
 4. **Rebuild zips** (skill changes only) — exact invocation quoted from CLAUDE.md and README:
 
    ```powershell
