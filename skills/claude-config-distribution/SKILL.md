@@ -19,7 +19,7 @@ Terms: a **symbolic link (symlink)** is a filesystem pointer to another file or 
 
 ## 2. Rebuild from scratch (new machine)
 
-**Fast path (added 2026-07-10):** `install.ps1` at the repo root automates steps 2–6 below idempotently — correct links left alone, wrong ones repointed, real files backed up to `~/.claude\backup-<stamp>\` — and finishes with the doctor health check. Tested: no-op path on a healthy install (6× OK, doctor HEALTHY); the fresh-machine path reuses the commands below but has not yet run end-to-end on a second machine. The manual steps remain authoritative for debugging and partial repairs.
+**Fast path (added 2026-07-10):** `install.ps1` at the repo root automates steps 2–6 below idempotently — correct links left alone, wrong ones repointed, real files backed up to `~/.claude\backup-<stamp>\` — and finishes with the doctor health check. It also supports **`-Mode Copy`** for machines where links/reparse points are unwanted: real files instead, hash-checked on refresh, `git pull` + re-run to update, upstream deletions NOT propagated (prune manually; orphan zips flag them). The doctor reports copy-mode entries as WARN (drift risk), never FAIL. Tested 2026-07-10: link no-op path (6× OK, doctor HEALTHY), copy fresh + refresh paths (scratch dest, 25 skills, hash-verified), doctor copy-mode path (6 WARN/0 FAIL). The link-mode fresh-machine path reuses the commands below but has not yet run end-to-end on a second machine. The manual steps remain authoritative for debugging and partial repairs.
 
 All commands **PowerShell**, unelevated, tested 2026-07-08 unless labeled otherwise.
 

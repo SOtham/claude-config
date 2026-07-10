@@ -5,7 +5,7 @@ Maintained source lives in `C:\Dev\claude-config\` — a git repo with a private
 ## Install on a new machine
 
 1. `git clone https://github.com/SOtham/claude-config.git C:\Dev\claude-config` (any path works; scripts derive locations from the clone)
-2. `powershell -ExecutionPolicy Bypass -File C:\Dev\claude-config\install.ps1` — idempotent: creates the links below, backs up anything real it displaces, then runs the health check. File symlinks want Developer Mode or an elevated shell (the script falls back to copies and says so). *(Fresh-machine path not yet exercised end-to-end; the no-op and health paths are tested.)*
+2. `powershell -ExecutionPolicy Bypass -File C:\Dev\claude-config\install.ps1` — idempotent: creates the links below, backs up anything real it displaces, then runs the health check. File symlinks want Developer Mode or an elevated shell (the script falls back to copies and says so). **Don't want links at all?** Add `-Mode Copy`: real files instead (tested 2026-07-10 — fresh, refresh, and doctor paths) — trade-off: edits don't propagate; refresh = `git pull` + re-run; the doctor reports copy-mode as WARN, not FAIL. *(Link-mode fresh-machine path not yet exercised end-to-end; its no-op and health paths are tested.)*
 3. Review `settings.json` — `model` and `effortLevel` are personal preferences.
 4. For claude.ai/web parity: run `sync.ps1` and upload the `dist\` zips (see "Web availability").
 

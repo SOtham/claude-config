@@ -83,12 +83,16 @@ foreach ($link in $expectedLinks) {
         continue
     }
     $item = Get-Item -LiteralPath $p -Force
-    $actualType = $item.LinkType
-    if (-not $actualType) { $actualType = 'not a link (regular file/dir)' }
     $actualTarget = @($item.Target) | Select-Object -First 1
     $expectedTarget = Join-Path $repoRoot $link.Name
-    if ($item.LinkType -ne $link.Type) {
-        Report 'FAIL' ("~/.claude\{0}: expected {1}, found {2}" -f $link.Name, $link.Type, $actualType)
+    if (-not $item.LinkType) {
+        # Real file/dir, not a link: legitimate on a copy-mode install (install.ps1 -Mode Copy),
+        # where edits do NOT propagate from the clone - refresh by re-running install.ps1 -Mode Copy.
+        # On a link-mode install this same state means a link was clobbered by a real file (triage:
+        # claude-config-debugging row i). WARN either way - the doctor cannot tell the modes apart.
+        Report 'WARN' ("~/.claude\{0} is a real {1}, not a link: copy-mode install (drift risk; refresh via install.ps1 -Mode Copy) OR a clobbered link (relink via install.ps1)" -f $link.Name, $(if ($link.Type -eq 'Junction') { 'directory' } else { 'file' }))
+    } elseif ($item.LinkType -ne $link.Type) {
+        Report 'FAIL' ("~/.claude\{0}: expected {1}, found {2}" -f $link.Name, $link.Type, $item.LinkType)
     } elseif (-not ($actualTarget -ieq $expectedTarget)) {
         Report 'FAIL' ("~/.claude\{0}: target '{1}' does not match canonical '{2}'" -f $link.Name, $actualTarget, $expectedTarget)
     } else {
