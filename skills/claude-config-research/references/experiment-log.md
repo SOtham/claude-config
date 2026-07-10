@@ -1,0 +1,109 @@
+# Experiment log — claude-config measured-adherence program
+
+The program-level record of every config hypothesis and its fate. This repo has no git history, so **a result that is not written here never happened**. Status of this convention: `candidate` (proposed 2026-07-08 by `claude-config-research` §4) — it graduates to adopted usage the first time a second entry lands.
+
+**Conventions**
+
+- One entry per hypothesis, newest last. Never delete or rewrite an entry; append corrections as a new dated line inside it.
+- The **Prediction** field must be written before the first test run. An entry whose prediction was written after the results says so explicitly (see entry #1).
+- Verdict vocabulary (lifecycle: `claude-config-research` §3.4): `candidate` | `trialed` | `adopted (via claude-config-change-control)` | `retired (negative recorded)` | `shipped unmeasured` (legacy/honesty label only — nothing new ships with this verdict).
+- Per-case pass/fail detail for a specific skill belongs in that skill's own `evals.md` (`claude-config-validation` §7); link to it from here rather than duplicating.
+
+## Entry template (copy, fill, append)
+
+```markdown
+## <n>. <YYYY-MM-DD> — <short title>
+- Hypothesis:
+- Prediction (written before running):
+- Method / arms:
+- Cases run: (trigger-cases.md case numbers, or link to <skill>/evals.md)
+- Result:
+- Negatives / anomalies: (must be filled — "none observed" is a claim, not a default)
+- Refutation attempt: (who tried to break it, how, outcome)
+- Verdict:
+```
+
+---
+
+## 1. 2026-07-07/08 — Meta-layer authoring campaign (this library's own origin)
+
+- **Hypothesis:** A 10-skill `claude-config-*` meta-layer (architecture, change-control, skill-authoring, platform-reference, distribution, debugging, diagnostics, validation, model-uplift, research), authored by parallel agents from a shared grounding brief, will let future sessions — including lightweight-tier ones — maintain this config library correctly without re-deriving it.
+- **Prediction (written before running):** None was written. The campaign predates this log; this field is filled retroactively and is therefore not a prediction. Recorded as the first example of the practice this program exists to end.
+- **Method / arms:** Single-arm authoring, no control. 10 skills written 2026-07-07/08 by parallel agents against a binding brief (ground-truth-only rule, house template, one-home-per-fact scope map); facts verified by file reads, read-only commands, and code.claude.com/docs fetches at authoring time.
+- **Cases run:** Zero behavioral cases. Structural checks only (diagnostics scripts existed by end of campaign). The trigger-recall corpus (`trigger-cases.md` v1, 33 cases) was created during the campaign but has **never been run**.
+- **Result:** 10 SKILL.md files on disk (25 total in the library); descriptions ≤200 chars by construction. No measurement of trigger recall, no adherence data, no tier comparison.
+- **Negatives / anomalies:** Unknown — that is the point. Nothing is known about whether these descriptions fire on realistic phrasings, collide with each other, or change cheaper-tier behavior.
+- **Refutation attempt:** None yet. First scheduled refutation = running the trigger-case corpus (M1), which can falsify any description's trigger claim.
+- **Verdict:** `shipped unmeasured`. Follow-up: Step 2 of `claude-config-research` §5 (headless observability check), then an M1 baseline run over all 33 cases.
+
+## 2. 2026-07-09 — Headless observability probe (research Step 2)
+
+- **Hypothesis:** A headless `claude -p` session produces an inspectable transcript from which "which skill loaded" can be read, making automated trigger-recall measurement feasible.
+- **Prediction (written before running):** Pre-registered: the session transcript will contain a machine-readable record of skill invocation. NOT pre-registered (exploratory): whether a lightweight tier auto-loads a description-matched skill on natural phrasing — that observation emerged and carries no pre-committed number.
+- **Method / arms:** Two single-case headless probes. Model `claude-haiku-4-5`, `--output-format json --permission-mode default`, cwd = `scratchpad/probe`. Probe 1: natural phrasing matching `root-cause`'s description ("integration test passes locally but fails in CI only sometimes... find the root cause"), `--allowedTools Skill`. Probe 2: explicit `/root-cause` invocation, `--allowedTools Skill,Read,Grep,Glob`. Observable = grep of the transcript at `~/.claude/projects/<munged-cwd>/<session_id>.jsonl`.
+- **Cases run:** 2 ad-hoc probes (not corpus cases). `trigger-cases.md` M1 run still pending.
+- **Result:** Observability **CONFIRMED**. The transcript carries (a) a `skill_listing` record enumerating available skills (contained `root-cause` and all `claude-config-*` — skills WERE offered to the session), and (b) a `{"name":"Skill","input":{"skill":"<name>"}}` record when a skill loads. Probe 1 → **0** Skill records (haiku answered a root-cause-shaped question from base knowledge without loading the skill). Probe 2 → **1** Skill record, `skill=root-cause` (explicit `/name` load is observable). ~$0.026 per probe.
+- **Negatives / anomalies:** Probe 1's non-load is the signal, not noise: availability ≠ load; one natural phrasing did not make haiku invoke the matching skill (n=1, not generalizable). Open subtlety: this observable is the model-INVOCATION path (a Skill tool call). Whether description-based auto-INJECTION happens separately in headless mode *without* a Skill call was not distinguished — a follow-up must check whether skill body text enters context absent a Skill record before M1 scoring rules are fixed.
+- **Refutation attempt:** Partial. Probe 2 refutes "loads are invisible." Not yet refuted: that `skill_listing` denotes availability specifically, and the auto-inject-vs-invoke ambiguity above.
+- **Verdict:** Step 2 **resolved (observability confirmed)**; unblocks M1. This is the log's second entry, so the experiment-log convention itself graduates `candidate → in use` per the header rule.
+
+## 3. 2026-07-09 — M1 baseline: trigger-recall of all 25 descriptions (milestone M1)
+
+- **Hypothesis:** The 25 skill descriptions on disk map realistic task phrasings to the intended skill (and NOT to rivals or to nothing-relevant) well enough to measure. Corpus: `trigger-cases.md` v1, 33 frozen cases (25 should-load, 3 discrimination, 5 near-miss).
+- **Prediction (partial pre-registration):** Predicted high recall (≥28/33) because descriptions were authored for disjointness, and near-misses would resolve to NONE. NOT pre-registered: the exact instrument — it evolved during the run as artifacts surfaced (below), so treat the *clean* number as the result and the instrument-selection as documented, not blinded.
+- **Method / arms:** Headless `claude -p` per case, fresh session, on two tiers (`claude-haiku-4-5`, `claude-sonnet-5`). Two instruments:
+  - **(A) Classification (primary, `scripts/run-m1.sh`):** tools disabled; model outputs the single best-matching skill name or NONE, read straight from the returned JSON. Isolates *description discriminability*.
+  - **(B) Invocation (secondary):** tools enabled; model given a routing prompt and expected to emit a `Skill` tool call; scored from the transcript. Measures *invocation-time behavior*, which also depends on whether the model bothers to call the tool.
+- **Cases run:** All 33, both tiers, both instruments.
+- **Result:**
+  - **(A) Classification recall — haiku 33/33, sonnet 33/33 (100% both tiers).** All 25 should-load correct; all 5 near-miss → NONE (zero over-trigger); all 3 discrimination correct (rival not chosen). The descriptions discriminate cleanly.
+  - **(B) Invocation recall (strict Skill-call) — haiku 30/33, sonnet 27/33.** Lower and tier-inverted vs (A) because: (i) the stronger model often *named* the right skill as text instead of emitting a Skill call (a routing-prompt artifact, not a description miss — verified by reading the outputs: sonnet cases 1/11/12/33 named the correct skill); (ii) **case 13 collision** (see anomalies).
+- **Negatives / anomalies:**
+  1. **`loops` vs bundled `loop` collision (real).** Case 13 ("poll the deploy status every 10 min…") routed at *invocation* time to the Claude Code bundled `loop` skill, not the personal `loops` — on both tiers. In *classification* mode both tiers picked `loops` correctly, so this is an invocation-time shadowing, not a description defect. Candidate action (owner's call, method-skill change → gated via `claude-config-change-control`): differentiate or retire the personal `loops` skill given the bundled `loop` overlaps it.
+  2. **Instrument pitfall #1 — flush race (refuted a false result).** The first scorer grepped the transcript before it flushed and reported **0/33 loads**; I nearly logged "headless doesn't auto-invoke skills." Inspecting the transcripts refuted it. Fix: read the answer from the returned JSON (instrument A) — no transcript, no race.
+  3. **Instrument pitfall #2 — session limit** truncated the sonnet classification run at case 14 (`api_error_status:429`); completed after the 8pm reset. Runs must tolerate and re-drive 429s (the shipped script flags `is_error` per case).
+  4. Sonnet occasionally recognized a phrasing as a benchmark item ("maps exactly to example 23") — mild validity caveat; realistic-phrasing variety in future corpus versions would reduce it.
+- **Refutation attempt:** Done and productive — anomaly #2 is a refuted false-negative. Standing refutation for the 100% claim: it measures *classification given descriptions*, not unprompted auto-fire in an interactive session; a fair challenge is to re-run instrument (B) in true interactive mode. Near-miss and discrimination cases guard the "not over-trigger" direction and all passed.
+- **Verdict:** **M1 achieved** — trigger-recall measured on 33 cases (≥20), both tiers, with a rerunnable protocol (`scripts/run-m1.sh`). Description discriminability: 100%/100%. Open follow-ups: (a) resolve the `loops`/`loop` collision; (b) M2 needs a *change* adopted/reverted on measured delta — the collision fix is the natural M2 candidate; (c) cross-check instrument (B) interactively.
+
+## 4. 2026-07-09 — A/B: differentiate `loops` from bundled `loop` (M2 candidate)
+
+- **Hypothesis:** Rewording `loops`' description to own *design discipline* (stop conditions, idempotent bodies, state files, pacing) and explicitly cede *scheduling a run* to the bundled `/loop` skill resolves the entry-#3 invocation collision without regressing any other case.
+- **Prediction (written before the arm-B run, verifiable in the session transcript):** On the classification instrument, both tiers: (i) case 13 ("Poll the deploy status every 10 minutes…") now resolves to `loop` (bundled) or NONE — i.e. it FAILS its frozen expectation `loops` **by design**; this is the documented intentional re-routing, not a silent regression; (ii) new case 34 (design-shaped loop-discipline phrasing) resolves to `loops`; (iii) all other 32 cases keep their arm-A results (near-misses stay NONE). Adoption rule: adopt if (ii) and (iii) hold; revert if any other case regresses or case 34 misses.
+- **Method / arms:** Arm A = entry #3 baseline (33/33 both tiers, old description). Arm B = new description ("Design discipline for recurring and autonomous work - stop conditions, idempotent bodies, state files, cache-aware pacing. Use when designing or hardening a loop; to schedule one, use bundled /loop.", 198 chars) + one body bullet on mechanics-vs-discipline; corpus case 34 appended per the append-only rule. Instrument: `scripts/run-m1.sh` (classification), both tiers — this run also closes the verification gap that the script's output-path edit post-dated its last execution. Plus one single-case invocation probe on case 13.
+- **Cases run:** All 34 (33 frozen + appended case 34), both tiers, classification instrument; plus one case-13 invocation probe (sonnet).
+- **Result:** **34/34 PASS on both tiers.** Case 34 → `loops` (both tiers). All 32 unchanged cases kept their arm-A results (near-misses stayed NONE). Case-13 invocation probe: sonnet invoked `loop` (bundled) — under the new description this is the *documented* division of labor (discipline → `loops`; scheduling → bundled `/loop`), so the entry-#3 collision is resolved by definition rather than by suppression. The run also closed a verification gap: `run-m1.sh` executed cleanly twice after its output-path edit.
+- **Negatives / anomalies:** (1) **Prediction (i) refuted:** case 13 *classification* stayed `loops` on both tiers instead of flipping to `loop`/NONE — better than predicted (no frozen-case break), but the prediction was wrong and is recorded as such. Plausible mechanism (unverified): the bundled `loop` skill did not appear in the earlier headless skill enumeration, so the classifier picks the best *nameable* match; classification and invocation measure different surfaces (consistent with entry #3's instrument note). (2) The new description names `/loop` inline — a future classifier might echo `loop`; did not occur in this run. (3) Corpus is now 34 cases — comparisons against entry #3's 33-case totals must account for that.
+- **Refutation attempt:** The pre-registered adoption rule was the refutation frame; the strongest challenge (case 13 breaking silently) did not materialize, and the invocation probe attacked the collision surface directly. Standing challenge: rerun the invocation suite in a real interactive session (entry #3 follow-up (c), still open).
+- **Verdict:** **Adopted** (per the pre-registered rule: (ii) and (iii) held) — the `loops` description/body change ships via `claude-config-change-control`. **M2 achieved**: a description change adopted *because of* a measured A/B with a written adoption rule, recorded here.
+
+## 5. 2026-07-10 — M3: regression gate adopted into change-control (protocol adoption, not an experiment)
+
+- **Hypothesis:** n/a — protocol adoption. The trigger-recall suite (`scripts/run-m1.sh`) becomes a written ship-checklist gate in `claude-config-change-control` §4 step 3 for every skill-description or CLAUDE.md-routing change.
+- **Method / arms:** Gate text added to change-control §4; rules: zero unexplained regressions vs the latest baseline here; intentional re-routings pre-registered (pattern: entry #4); corpus append-only.
+- **Result:** Gate live as of 2026-07-10. First enforced instance predates the wording: entry #4 ran exactly this protocol.
+- **Negatives / anomalies:** The gate is manual — nothing *forces* a session to run it except the skill text and routing. Enforcement-by-hook remains an open idea (model-uplift menu lever 5).
+- **Refutation attempt:** n/a for adoption; the gate refutes itself if a future description change ships past it unmeasured — check this log against the ship dates of future description changes.
+- **Verdict:** `adopted (via claude-config-change-control)`. **M3 adopted** — stays short of "proven" until several changes have actually passed through the gate.
+
+## 6. 2026-07-10 — Interactive cross-check: do skills auto-fire in agent-harness sessions? (entry #3 follow-up c)
+
+- **Hypothesis:** In agent-harness sessions (Claude Code subagents — closer to interactive than headless `-p`, but NOT the user-facing UI; surface caveat stands), skills auto-fire on natural task phrasings without any routing prompt.
+- **Prediction (written before the runs, verifiable in the session transcript):** On the cheapest tier, of two should-load probes — corpus case 5 phrasing (→ `root-cause`) and case 1 phrasing with a seeded `fetchUsers` file (→ `writing-code`) — **at least one** produces a `Skill` tool call for the matching skill in its transcript; the near-miss probe (case 28 trivia) produces none. Basis: headless natural-mode arm A data (haiku loaded `root-cause`, missed `writing-code`). If subagents turn out to lack the Skill tool entirely, that is the finding and the probes are void.
+- **Method / arms:** 3 parallel subagents (lightweight tier), prompt = the natural phrasing plus only a file-scope fence; observable = `"name":"Skill"` / `"skill":"…"` records in each subagent transcript. Instrument note: subagent transcripts live at `~/.claude/projects/<munged-cwd>/<session>/subagents/agent-<id>.jsonl` — the `tasks/*.output` stubs are NOT the transcript.
+- **Cases run:** 3 (case-5 phrasing → root-cause; case-1 phrasing with a seeded `fetchUsers` file → writing-code; case-28 trivia near-miss). All haiku-tier.
+- **Result:** **Prediction REFUTED — 0 of 2 should-load probes loaded any skill.** Root-cause probe: 0 Skill records (listed the empty dir, asked for logs). Writing-code probe: 0 Skill records — it *did the work* (implemented backoff) without loading the method skill. Near-miss: 0, as predicted. Instrument validity is proven by entry #7's arm B, which loaded `root-cause` via the Skill tool in the identical harness — so the zeros are behavior, not tooling.
+- **Negatives / anomalies:** Headless natural-mode haiku *had* loaded `root-cause` on this same phrasing (entry #2/#3 data); the harness probe did not — auto-fire is inconsistent across surfaces and cannot be relied on at the cheap tier. The scope-fence sentence in the prompts is a mild naturalness contaminant (noted in method).
+- **Refutation attempt:** The prediction itself was refuted by the data — recorded as such. Challenge to this result: n=2 should-load probes; and the user-facing interactive UI remains untested (subagent harness only).
+- **Verdict:** `trialed` — **natural phrasing does not reliably trigger skill loads on the cheap tier (0/2 here)**. Direct consequence: uplift levers 2/3 (scaffold / explicit invocation) are *required*, not optional, for cheap-tier sessions; strengthens the case for hook-based enforcement (lever 5, still open idea).
+
+## 7. 2026-07-10 — First field test of the model-uplift Phase 1 scaffold (A/B, n=1 per arm)
+
+- **Hypothesis:** The `claude-config-model-uplift` Phase 1 scaffold changes lightweight-tier behavior on a real seeded-bug task toward the campaign's Phase 2 observables.
+- **Prediction (written before the runs):** Pre-declared observables: (1) session names a loaded skill early (`root-cause` or `writing-code`); (2) states the root cause in one sentence before editing; (3) closes with an explicit verified/not-verified split showing command output. Arm B (scaffold) exhibits **all three**; Arm A (bare task) misses **at least one** — most likely (1), per headless natural-mode data. n=1 per arm = anecdote by `claude-config-validation` §3 weighting; this entry moves the scaffold from "candidate, untested" to "candidate, first field anecdote" at best, never to proven.
+- **Method / arms:** Identical seeded bug in two isolated scratchpad dirs: `parse_log.py` overcounts ERROR lines (loose `startswith("ERR")` also matches an ERRATA line; correct answer 3, script prints 4). Arm A prompt = task only. Arm B prompt = Phase 1 scaffold verbatim + task. Mid-tier (Sonnet-class) subagents, run in parallel. Grading: transcript vs the three observables; single grader with pre-declared observables (no blinding possible — limitation noted).
+- **Cases run:** 1 per arm.
+- **Result:** **Prediction CONFIRMED on both arms.** Arm B (scaffold): **3/3** — (1) Skill call was its *first* tool action (`root-cause`), named in its report; (2) root cause stated in one sentence (loose prefix match caught ERRATA), reads preceded the edit (Skill→Read→Read→Edit); (3) explicit verified/NOT-verified split — and under a live tool-classifier outage that blocked all execution, it refused to claim runtime verification, reported exactly what was and wasn't verified, and stopped after 3 failed attempts per the rule. Arm A (bare): **2/3** — correct fix, root cause stated, ran the script (Read→Read→Edit→Bash); missed exactly observable (1): zero skill loads, as predicted. Both fixes independently re-verified on disk afterward (both print 3, identical correct change).
+- **Negatives / anomalies:** (1) Environmental confound: a platform classifier outage hit arm B's execution window but not arm A's — arm B's obs-3 pass is via honest non-verification reporting rather than a clean run (arguably stronger evidence for the Verification rule, but the arms did not see identical environments). (2) Arm A at Sonnet-class was already good (2/3) — the scaffold's marginal effect at n=1 is skill loading + a more explicit verification contract, not task success; the seeded task may be too easy to separate arms on outcome quality. (3) Arm B flagged a harness system-reminder leaking through a Skill tool result as injection-shaped content — good instinct, harness-level curiosity, not a library defect.
+- **Refutation attempt:** The pre-registered prediction survived contact on both arms. Standing challenges: n=1 per arm (anecdote by `claude-config-validation` §3 weighting); grader unblinded; task difficulty low; environments differed between arms.
+- **Verdict:** `trialed` — **first field anecdote supporting the Phase 1 scaffold** (moves it from "candidate, untested" to "candidate, first supporting anecdote"). Adoption as proven doctrine requires n≥3 per arm on harder tasks per the validation weighting.

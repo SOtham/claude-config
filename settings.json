@@ -1,0 +1,31 @@
+{
+  "autoUpdatesChannel": "latest",
+  "model": "claude-fable-5[1m]",
+  "effortLevel": "xhigh",
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/id_rsa)",
+      "Read(**/id_ed25519)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.claude/.credentials.json)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0; if [ ! -f \"$root/CLAUDE.md\" ] && [ ! -f \"$root/.claude/CLAUDE.md\" ]; then echo '{\"systemMessage\":\"This repo has no CLAUDE.md - run /repo-setup to add the Claude files.\",\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"This repository lacks CLAUDE.md/.claude configuration. Remind the user and offer the repo-setup skill.\"}}'; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+# personal-machine overrides (repo-setup doctrine)
+CLAUDE.local.md
+settings.local.json
+# generated output — dist/ lives in ~/.claude; this guards the wrong-path sync trap (distribution skill s5)
+dist/

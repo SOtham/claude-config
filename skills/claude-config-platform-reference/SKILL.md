@@ -1,0 +1,127 @@
+---
+name: claude-config-platform-reference
+description: Dated Claude Code platform facts - CLAUDE.md loading, settings precedence, hook events, skills discovery, upload limits, web-vs-local, headless CLI. Use when checking any platform behavior here.
+---
+
+# Claude-Config Platform Reference
+
+What the Claude Code platform actually does with this library's files — dated, source-labeled facts, no procedures. **WARNING: platform facts drift. Re-verify against the cited URLs before relying on anything here after a Claude Code version change** (local binary: 2.1.195, verified 2026-07-08). Source labels: **Docs** = fetched from code.claude.com/docs on 2026-07-08; **Local** = read-only command or file read on this machine; **Repo** = this repo's README/scripts (owner-verified); **Unverified** = check before use.
+
+## 1. Config loading — what enters context, when (as of 2026-07-08)
+
+**CLAUDE.md hierarchy** (Docs: https://code.claude.com/docs/en/memory). Loaded at session start, concatenated broadest-first — later files never override earlier ones, they stack:
+
+1. Managed policy — Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` (not present here)
+2. User — `~/.claude/CLAUDE.md` (in this setup a symlink to `C:\Dev\claude-config\CLAUDE.md`)
+3. Project — `./CLAUDE.md` or `./.claude/CLAUDE.md`, plus every parent directory up the tree from cwd
+4. Local — `./CLAUDE.local.md`, appended after `CLAUDE.md` at the same directory level
+
+- Files at or above cwd load **in full at launch**; files in subdirectories load on demand when Claude reads files there (Docs).
+- Content arrives as a **user message after the system prompt** — context, not enforcement. Enforcement lives in settings permissions and hooks (Docs).
+- `@path/to/file` imports expand at launch, max 4 hops deep; imports organize but do not save context (Docs).
+- **HTML comments**: block-level `<!-- ... -->` in CLAUDE.md is stripped before injection (zero token cost); comments inside code blocks are preserved; the Read tool still sees them (Docs — confirms this repo's CLAUDE.md maintainer-note claim).
+- Docs size guidance: under 200 lines per file; this repo holds its global file to ~120 (doctrine: `claude-config-architecture`).
+- `/memory` lists every loaded file. Project-root CLAUDE.md is re-read and re-injected after `/compact`; nested ones reload only on next file access (Docs).
+
+**settings.json precedence** (Docs: https://code.claude.com/docs/en/settings), highest to lowest: managed → CLI arguments → `.claude/settings.local.json` → `.claude/settings.json` (project) → `~/.claude/settings.json` (user). Exception: **permission rules merge across scopes** rather than override — a project file cannot silently drop a user-level deny.
+
+## 2. settings.json keys used here (as of 2026-07-08)
+
+Current file: `C:\Dev\claude-config\settings.json` (Local). Semantics per the Docs settings page; none of these keys is marked experimental there.
+
+| Key | Current value | What it does (Docs) |
+| --- | --- | --- |
+| `autoUpdatesChannel` | `"latest"` | Release channel: `"latest"` or `"stable"` (~1 week older, skips major regressions) |
+| `model` | `"claude-fable-5[1m]"` | Default model; `--model` / `ANTHROPIC_MODEL` override per session. The `[1m]` suffix is repo-observed working, **Unverified in docs** — check https://code.claude.com/docs/en/model-config |
+| `effortLevel` | `"xhigh"` | Persists effort across sessions (`low`/`medium`/`high`/`xhigh`); written by `/effort`; `--effort` / `CLAUDE_CODE_EFFORT_LEVEL` override per session |
+| `permissions.deny` | 9 `Read()` rules | Client-enforced blocklist regardless of what the model decides; covers `.env*`, `*.pem`, `*.key`, `id_rsa`, `id_ed25519`, `~/.ssh`, `~/.aws`, `~/.claude/.credentials.json` |
+| `hooks.SessionStart` | 1 command hook | Section 3. Hooks reload on file change; a `ConfigChange` hook event fires per detected change (Docs) |
+
+Adding a new key: verify it exists on the Docs settings page first, then ship through `claude-config-change-control` — settings.json is the enforced layer, so it carries the highest gate.
+
+## 3. Hooks (as of 2026-07-08)
+
+Docs: https://code.claude.com/docs/en/hooks. ~30 events (30 counted 2026-07-09); the ones most relevant here: `SessionStart`, `PreToolUse` (can block a tool call), `PostToolUse`, `UserPromptSubmit`, `PermissionRequest`, `Stop`, `PreCompact`/`PostCompact`, `ConfigChange`, `SessionEnd` — full list at the URL. Structure: `hooks.<Event>` → array of matcher groups → `hooks` array of handlers (`type`: `command`|`http`|`mcp_tool`|`prompt`|`agent`). `timeout` is in **seconds** (default 600 for command hooks). Exit 0 = success and stdout JSON is processed; exit 2 = blocking error on blockable events — SessionStart is NOT blockable (its stderr just shows to the user).
+
+**The one hook in settings.json** — SessionStart, re-wrapped for reading (the real value is one line; Local read):
+
+```bash
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0;   # not a git repo -> exit 0, hook stays silent
+if [ ! -f "$root/CLAUDE.md" ] && [ ! -f "$root/.claude/CLAUDE.md" ]; then   # neither project CLAUDE.md location exists
+  echo '{"systemMessage":"This repo has no CLAUDE.md - run /repo-setup to add the Claude files.",
+         "hookSpecificOutput":{"hookEventName":"SessionStart",
+           "additionalContext":"This repository lacks CLAUDE.md/.claude configuration. Remind the user and offer the repo-setup skill."}}'
+fi
+```
+
+- No `matcher` → runs on every SessionStart source: `startup`, `resume`, `clear`, `compact` (Docs).
+- Output contract (Docs): top-level `systemMessage` renders to the user; `hookSpecificOutput.additionalContext` is injected into Claude's context before the first prompt; `hookEventName` must be `"SessionStart"`. JSON is only processed on exit 0. Plain stdout would also become context for this event, but JSON splits the user-visible and model-visible halves.
+- `"timeout": 10` = 10 seconds (Docs: units are seconds).
+- Shell: command hooks default to bash; PowerShell only becomes the default on Windows *without* Git Bash (Docs). This machine has Git Bash — Inference: the hook runs under bash, which its `$( )`/`[ -f ]` syntax requires.
+
+## 4. Skills mechanics (as of 2026-07-08)
+
+Docs: https://code.claude.com/docs/en/skills.
+
+- **Discovery locations**: enterprise (managed) → personal `~/.claude/skills/<name>/SKILL.md` → project `.claude/skills/<name>/SKILL.md` → plugin `<plugin>/skills/<name>/SKILL.md` (namespaced `plugin:skill`, cannot collide). On a name collision, enterprise beats personal beats project; any level overrides a bundled skill of the same name. Nested `.claude/skills/` below cwd load on demand; parent directories up to the repo root load too (Docs).
+- **Symlinks are supported** for skill directories (Docs) — this is why `~/.claude/skills` being a junction (Windows directory link) to `C:\Dev\claude-config\skills` works; Local: this session loaded skills through it.
+- **Frontmatter the platform reads** — frontmatter is the YAML block between `---` lines atop SKILL.md (all fields optional; `description` recommended): `name` is display-only — the **directory name** is the `/command` name, which is why this repo pins folder = name (see `claude-config-skill-authoring`). Other fields: `description`, `when_to_use`, `disable-model-invocation`, `user-invocable`, `allowed-tools`, `disallowed-tools`, `paths`, `model`, `effort`, `context: fork` + `agent`, `hooks`, `argument-hint`, `arguments`, `shell`. Full table at the URL. Malformed YAML → body still loads with empty metadata, so `/name` works but auto-loading breaks (Docs).
+- **When context is spent**: every skill's name+description sits in context all session (per-entry cap 1,536 chars of `description`+`when_to_use` combined; the whole listing is budgeted at ~1% of the context window — `/doctor` reports truncation). The **body** loads only on invocation — you typing `/name`, or Claude matching the description — and then stays in context for the rest of the session. After compaction, each invoked skill is re-attached up to 5,000 tokens within a 25,000-token shared budget, most-recent first (Docs).
+- **Live edits**: changes under `~/.claude/skills/` take effect within the current session (Docs; this repo's README states the weaker "new sessions pick it up" — both hold).
+
+## 5. claude.ai upload constraints (as of 2026-07-09)
+
+These are claude.ai-side, NOT Claude Code platform limits — they do not appear in the Claude Code docs. Upload UI path: **Settings > Capabilities** per claude.com/docs/skills/how-to ("Enable the skill in **Settings > Capabilities**"); the support help center instead says "Customize > Skills" — the UI label drifts between surfaces/versions, so treat the exact leaf as volatile.
+
+- `description` ≤ **200 characters** — **docs-verified** (claude.com/docs/skills/how-to warning: "Claude.ai limits descriptions to 200 characters", fetched 2026-07-09). **Enforcement mechanism (hard reject vs. silent truncation) is undocumented** — do not assume rejection; Claude Code truncates its *own* `/skills` listing at 250 chars (GitHub anthropics/claude-code #40121), so claude.ai may truncate too. The only definitive test is a real upload. Distinct from Claude Code's 1,536-char listing cap in Section 4; the Agent Skills spec itself allows 1024, and the API allows 1024 — 200 is the claude.ai-upload-specific floor.
+- Zip layout: the skill **folder at the zip root**, with **forward-slash** entry paths (Repo: `sync.ps1` header). Backslash incident and rationale: `claude-config-distribution` §3, which also owns the rebuild/upload runbook.
+- Folder name = frontmatter `name` = zip name, or local skill and upload stop matching (Repo: README; rationale in `claude-config-skill-authoring`).
+- Reject-vs-truncate at 201 chars: ready 3-minute manual test (tested builder snippet + outcome table) in `references/upload-limit-test.md` — run it once and replace the "undocumented" label above with the dated result.
+
+## 6. Web vs local availability — load-bearing (as of 2026-07-08)
+
+**User-level `~/.claude/` (CLAUDE.md, settings.json, skills) NEVER reaches Claude Code web sessions** (Repo: README "Web availability (verified)" — owner-verified by testing; the fetched docs do not contradict it). The three routes that do reach the web:
+
+1. **claude.ai skill upload** (the `dist/*.zip` files) — uploaded skills also load into Claude Code web sessions. Primary route.
+2. **Per-repo**: commit the needed `skills/<name>/` folders into the repo's `.claude/skills/` and/or paste `CLAUDE-SNIPPET.md` into its `CLAUDE.md` (procedure: `repo-setup`).
+3. **Plugin + marketplace repo** declared in repos' `.claude/settings.json` — candidate, not built (see `claude-config-distribution`).
+
+Consequence: any behavior this library must guarantee in web sessions has to travel route 1 or 2. Never assume the global CLAUDE.md, settings.json deny rules, or the SessionStart hook exist there.
+
+## 7. Headless / programmatic use (as of 2026-07-08)
+
+Verified two ways: running `--help` on the local binary v2.1.195 (Local; note `claude` was not on PATH in this session's shells — the binary is `C:\Users\User\.local\bin\claude.exe`) and Docs https://code.claude.com/docs/en/headless. Flags confirmed in both unless noted:
+
+- `-p, --print` — non-interactive: print response and exit; reads stdin (piped input capped at 10MB — Docs).
+- `--output-format text|json|stream-json` — `json` returns `result`, `session_id`, `total_cost_usd` (Docs) → machine-gradable runs.
+- `--json-schema '<schema>'` — schema-validated output in the `structured_output` field.
+- `--allowedTools` / `--disallowedTools` (permission-rule syntax) and `--permission-mode` (`acceptEdits`|`auto`|`bypassPermissions`|`default`|`dontAsk`|`plan` — Local `--help`) — unattended runs without prompts.
+- `-c/--continue`, `-r/--resume <id>`, `--session-id <uuid>` — multi-turn scripting; capture `session_id` from JSON output.
+- `--model <model>`, `--effort low|medium|high|xhigh|max` (Local `--help`) — pin the capability tier under test.
+- `--settings <file-or-json>`, `--setting-sources user,project,local` — control which config layers load.
+- `--bare` — skips hooks, plugins, auto-memory, and CLAUDE.md auto-discovery; skills still resolve via `/skill-name` (Local `--help` + Docs) → the clean **baseline** arm of an adherence eval; the with-config arm omits it.
+- `--max-budget-usd <amount>` (print mode only — Local `--help`) — spend cap per run.
+
+Eval design on top of these flags (predict-first discipline, with/without comparison, milestones) is owned by `claude-config-research`.
+
+## When NOT to use this skill
+
+- Writing or editing a skill → `claude-config-skill-authoring`
+- Rebuilding zips/symlinks, sync.ps1 anatomy, upload steps → `claude-config-distribution`
+- A config file isn't taking effect, something broke → `claude-config-debugging`
+- Whether a change is allowed and how to ship it → `claude-config-change-control`
+- Why the three-layer design exists → `claude-config-architecture`
+
+## Provenance and maintenance
+
+All facts dated **2026-07-08**; local Claude Code **2.1.195** (`claude --version`). The docs describe some behavior gated ≥ v2.1.196 (e.g. `${CLAUDE_PROJECT_DIR}` substitution in skill bodies) that this binary predates — compare versions before assuming parity. Re-verify per fact:
+
+- CLAUDE.md loading order, HTML-comment stripping, imports, compaction survival: re-fetch https://code.claude.com/docs/en/memory
+- Settings precedence + key semantics: re-fetch https://code.claude.com/docs/en/settings
+- Hook events, SessionStart contract, timeout units, exit codes: re-fetch https://code.claude.com/docs/en/hooks
+- Skills discovery, frontmatter table, 1,536-char cap and listing budget, body lifecycle: re-fetch https://code.claude.com/docs/en/skills
+- Headless flags: re-fetch https://code.claude.com/docs/en/headless and run (PowerShell) `& "$env:USERPROFILE\.local\bin\claude.exe" --help`
+- Local version: (PowerShell) `& "$env:USERPROFILE\.local\bin\claude.exe" --version`
+- Current settings values and the hook command: read `C:\Dev\claude-config\settings.json`
+- 200-char upload limit: docs-verified at https://claude.com/docs/skills/how-to (re-fetch to confirm still 200); reject-vs-truncate mechanism still undocumented — a real upload of a 201-char description is the definitive test. Zip layout: `sync.ps1` header. Upload UI path drifts (docs: Settings > Capabilities; help center: Customize > Skills) — re-check in-product.
+- Web-vs-local finding: README "Web availability (verified)"; re-test by opening a Claude Code web session and checking whether personal skills appear
