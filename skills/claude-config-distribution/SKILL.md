@@ -19,6 +19,8 @@ Terms: a **symbolic link (symlink)** is a filesystem pointer to another file or 
 
 ## 2. Rebuild from scratch (new machine)
 
+**Fast path (added 2026-07-10):** `install.ps1` at the repo root automates steps 2–6 below idempotently — correct links left alone, wrong ones repointed, real files backed up to `~/.claude\backup-<stamp>\` — and finishes with the doctor health check. Tested: no-op path on a healthy install (6× OK, doctor HEALTHY); the fresh-machine path reuses the commands below but has not yet run end-to-end on a second machine. The manual steps remain authoritative for debugging and partial repairs.
+
 All commands **PowerShell**, unelevated, tested 2026-07-08 unless labeled otherwise.
 
 1. Clone the canonical source (git repo with private remote since 2026-07-10): `git clone https://github.com/SOtham/claude-config.git C:\Dev\claude-config` — needs an authenticated `gh`/git; fallback: restore from backup or copy from the old machine. Note: the remote holds committed state only.

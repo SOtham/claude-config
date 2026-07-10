@@ -1,6 +1,13 @@
 # ~/.claude — Personal Claude Setup
 
-Maintained source lives in `C:\Dev\claude-config\`. The files below are symlinked into `~/.claude\` so Claude Code picks them up automatically.
+Maintained source lives in `C:\Dev\claude-config\` — a git repo with a private remote (`github.com/SOtham/claude-config`). The files below are symlinked into `~/.claude\` so Claude Code picks them up automatically.
+
+## Install on a new machine
+
+1. `git clone https://github.com/SOtham/claude-config.git C:\Dev\claude-config` (any path works; scripts derive locations from the clone)
+2. `powershell -ExecutionPolicy Bypass -File C:\Dev\claude-config\install.ps1` — idempotent: creates the links below, backs up anything real it displaces, then runs the health check. File symlinks want Developer Mode or an elevated shell (the script falls back to copies and says so). *(Fresh-machine path not yet exercised end-to-end; the no-op and health paths are tested.)*
+3. Review `settings.json` — `model` and `effortLevel` are personal preferences.
+4. For claude.ai/web parity: run `sync.ps1` and upload the `dist\` zips (see "Web availability").
 
 ## Layout
 
@@ -42,11 +49,21 @@ Gate the change first per the `claude-config-change-control` skill (classificati
 2. Run `powershell -ExecutionPolicy Bypass -File "$HOME\.claude\sync.ps1"` to rebuild the zips.
 3. Re-upload the changed zip(s) at claude.ai → Settings → Capabilities → Skills (uploaded skills also load into Claude Code web sessions).
 
-Constraints: folder name = frontmatter `name` = zip name; `description` ≤200 chars (claude.ai limit), front-loading *when to use*.
+Constraints: folder name = frontmatter `name` = zip name; `description` ≤200 chars (house rule — docs-advised; NOT upload-enforced, verified 2026-07-10, see `claude-config-platform-reference` §5), front-loading *when to use*.
 
 ## Web availability (verified)
 
 User-level `~/.claude/` never carries over to Claude Code web sessions. Routes to the web:
-- **claude.ai skill upload** (the zips in `dist/`) — loads into web sessions automatically. Primary route.
+- **claude.ai skill upload** (the zips in `dist/`) — loads into web sessions automatically. Primary route. Upload files must be BOM-less (claude.ai rejects BOM-prefixed SKILL.md; `sync.ps1`-built zips are safe — verified 2026-07-10).
 - **Per-repo**: commit needed `skills/<name>/` folders into a repo's `.claude/skills/` and/or paste `CLAUDE-SNIPPET.md` into its `CLAUDE.md`.
 - **Later, if sharing is wanted**: convert skills into a plugin + marketplace repo on GitHub and declare it in repos' `.claude/settings.json`.
+
+## Portability — what drops in where
+
+| Piece | Drop into another repo (`.claude/skills/`) | Drop into another installation |
+| --- | --- | --- |
+| 15 method skills | ✅ copy folders as-is — zero personal paths (audited 2026-07-10) | ✅ via clone + install.ps1 |
+| 10 `claude-config-*` meta skills | ❌ they describe THIS library — meaningless elsewhere | ✅ they travel with the clone |
+| CLAUDE-SNIPPET.md | ✅ paste into the repo's CLAUDE.md (rules for web/teammates) | n/a |
+| CLAUDE.md / settings.json | ❌ personal — repos get the snippet instead | ✅ linked by install.ps1; review `model` key |
+| Skill-loading caveat | Interactive sessions auto-load skills; **subagents/headless do NOT** (0/9 measured) — delegated prompts must name the skill or carry the `claude-config-model-uplift` scaffold | same |
