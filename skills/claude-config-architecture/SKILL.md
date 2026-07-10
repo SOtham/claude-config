@@ -10,7 +10,7 @@ The load-bearing design decisions of `C:\Dev\claude-config`, why each was made, 
 ## 1. The system in one picture
 
 ```
-C:\Dev\claude-config\                     CANONICAL SOURCE — edit here (NOT a git repo)
+C:\Dev\claude-config\                     CANONICAL SOURCE — edit here (git repo; private remote github.com/SOtham/claude-config)
 ├── CLAUDE.md / settings.json / sync.ps1 / CLAUDE-SNIPPET.md / README.md
 └── skills\<name>\SKILL.md
       │
@@ -77,10 +77,10 @@ Automated checks for these live in `claude-config-diagnostics`; the list here is
 
 | Weak point | Why it matters | Status | Addressed by |
 | --- | --- | --- | --- |
-| **Not under version control.** `C:\Dev\claude-config` has no `.git` (verified 2026-07-08) — no history, no diff review, no rollback | The single biggest structural risk: a bad edit is unrecoverable except from memory or ad-hoc backups | open | Nothing yet. Initializing a git repo is a *candidate* remedy — the owner's call. Until then the gates in `claude-config-change-control` are the only protection |
+| **Version control** — was the top weak point; **closed 2026-07-10**: git repo with private remote `github.com/SOtham/claude-config` (owner-authorized) | History, diff review, and revert now exist — for committed state only | closed | Residual: single owner, no PR review — `claude-config-change-control` gates stay mandatory, and every shipped change must be committed (uncommitted edits remain unprotected) |
 | **Manual zip re-upload to claude.ai** | Web sessions run stale skills whenever an upload is skipped. Observed 2026-07-09: 25 skill folders vs 15 `dist\` zips — re-check with the drift one-liner in Provenance | open | Post-change protocol: `claude-config-change-control`; staleness check: `claude-config-diagnostics` |
 | **No adherence eval harness yet** | Config changes ship on judgment, not measurement — no evidence a rule actually improves cheaper-tier behavior | open | Research program: `claude-config-research`; interim spot-checks: `claude-config-validation` |
-| **Single-machine setup** | Links are absolute paths on one Windows 11 machine; disk loss means total loss (compounded by no git) | open | Rebuild runbook: `claude-config-distribution` — recreates the structure, not lost content |
+| **Single-machine setup** | Links are absolute paths on one Windows 11 machine; committed content now survives disk loss via the private remote, links and uncommitted work do not | mitigated 2026-07-10 | Rebuild runbook: `claude-config-distribution` — clone the remote, recreate the links |
 
 ## 6. Purpose — the yardstick
 
@@ -100,7 +100,7 @@ Owner statement (2026-07-07): this library exists to transfer top-tier ("Fable-c
 Written 2026-07-08; inventory re-verified 2026-07-09: 25 skill folders, 15 zips in `~/.claude\dist`, CLAUDE.md at 104 lines. Counts drift — re-run the one-liners below rather than trusting any snapshot. All commands are PowerShell, tested:
 
 - Links resolve to canonical source: `Get-ChildItem $HOME\.claude | Where-Object { $_.LinkType } | ForEach-Object { "{0} [{1}] -> {2}" -f $_.Name, $_.LinkType, ($_.Target -join ',') }`
-- Still no git repo (expect `False`; `True` means the top weak point is closed — update Section 5): `Test-Path C:\Dev\claude-config\.git`
+- Git state (expect `True` since 2026-07-10; remote check: `git -C C:\Dev\claude-config remote -v` → private github.com/SOtham/claude-config): `Test-Path C:\Dev\claude-config\.git`
 - CLAUDE.md within budget (expect ≤ ~120): `(Get-Content "$HOME\.claude\CLAUDE.md").Count`
 - Budget doctrine source: the HTML maintainer comment at the top of `C:\Dev\claude-config\CLAUDE.md`
 - Secrets deny rules intact: read `permissions.deny` in `C:\Dev\claude-config\settings.json`

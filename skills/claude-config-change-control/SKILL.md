@@ -5,7 +5,7 @@ description: Gate and ship changes to this config library - classification table
 
 # Claude-Config Change Control
 
-Every change to `C:\Dev\claude-config` ships through this skill — including "one-line" edits. This library's job is to transfer top-tier engineering discipline to cheaper-tier sessions; an unguarded config change silently degrades every future session in every repo, and with no git history (Section 5) a bad edit has no undo. Work in order: classify (§1), respect the non-negotiables (§2), confirm the layer (§3), ship via the checklist (§4).
+Every change to `C:\Dev\claude-config` ships through this skill — including "one-line" edits. This library's job is to transfer top-tier engineering discipline to cheaper-tier sessions; an unguarded config change silently degrades every future session in every repo; git (Section 5) gives an undo, but only for committed state — gate first, then commit. Work in order: classify (§1), respect the non-negotiables (§2), confirm the layer (§3), ship via the checklist (§4).
 
 ## 1. Classify the change
 
@@ -56,15 +56,14 @@ Steps verified against README "Editing a skill" and CLAUDE.md Environment Facts,
 
 **Manual steps — skipping them causes drift:** steps 4 and 5 have no automation; a skipped re-upload leaves claude.ai serving the old skill indefinitely. Same for refreshing per-repo skill copies and `CLAUDE-SNIPPET.md` pastes. Detect stale zips with the dist-staleness checker in `claude-config-diagnostics`. Note: CLAUDE.md and settings.json never reach the web via sync at all — their only web route is the snippet/per-repo path (`claude-config-distribution`).
 
-## 5. Review discipline (single owner, no git)
+## 5. Review discipline (single owner, git-backed)
 
-`C:\Dev\claude-config` is a single-owner personal library and is **not under git** (verified 2026-07-08: `git rev-parse` → "not a git repository"). No history, no diff review, no revert. The compensating controls are — all three, every time:
+`C:\Dev\claude-config` is a single-owner personal library, **under git since 2026-07-10** (owner-authorized; private remote `github.com/SOtham/claude-config`). Git supplies history, diff review, and revert — for committed state. Because there is still no second reviewer, the three controls remain mandatory on every change, plus a fourth:
 
 - **Plan-first gate** (CLAUDE.md): multi-file, security-sensitive, or infrastructure changes get a written plan and explicit owner confirmation before execution; silence is not confirmation.
 - **Diagnostics before and after**: capture a clean baseline (`claude-config-diagnostics`), make the change, re-run, compare.
 - **Owner's explicit confirmation** for anything destructive or gate-weakening, with what/impact/recovery stated first (CLAUDE.md, Safety).
-
-**Top structural improvement (candidate, open):** put the repo under git — history would restore revert and diff review, the two controls this list only approximates. That is the owner's call in a session of its own; never initialize git as a side effect of another task. (Weak-point inventory: `claude-config-architecture`.)
+- **Commit after every shipped change** (and push): an uncommitted edit has no undo; a pushed commit survives the machine. Descriptive message; never rewrite pushed history without explicit owner instruction.
 
 ## When NOT to use this skill
 
@@ -76,11 +75,11 @@ Steps verified against README "Editing a skill" and CLAUDE.md Environment Facts,
 
 ## Provenance and maintenance
 
-Written 2026-07-08 against the repo state on that date (CLAUDE.md at 104 lines; 15 method skills plus the new `claude-config-*` meta-layer; repo not under git; 15 zips in `~/.claude/dist`). Re-verify volatile facts before trusting them:
+Written 2026-07-08; §5 rewritten 2026-07-10 when the repo went under git (private remote github.com/SOtham/claude-config). Counts in any snapshot drift — re-verify volatile facts before trusting them:
 
 - Sync invocation still verbatim in both doctrine files (PowerShell, tested): `Select-String -Path "$HOME\.claude\CLAUDE.md","$HOME\.claude\README.md" -Pattern 'sync\.ps1"'`
 - CLAUDE.md budget and current usage (PowerShell, tested): `(Get-Content "$HOME\.claude\CLAUDE.md").Count` — budget line: `Get-Content "$HOME\.claude\CLAUDE.md" -TotalCount 9`
 - Deny-rule inventory (PowerShell, tested): `(Get-Content "$HOME\.claude\settings.json" -Raw | ConvertFrom-Json).permissions.deny`
-- Git status (PowerShell or bash, tested): `git -C C:\Dev\claude-config rev-parse --is-inside-work-tree` — expect "not a git repository" until the Section 5 candidate is adopted
+- Git status (PowerShell or bash, tested): `git -C C:\Dev\claude-config rev-parse --is-inside-work-tree` — expect `true` since 2026-07-10; remote: `git -C C:\Dev\claude-config remote -v`
 - Ship steps 1/4/5/6 wording: "Editing a skill" section of `C:\Dev\claude-config\README.md`; forward-slash zip invariant: header comment of `C:\Dev\claude-config\sync.ps1`
 - ≤200-char description limit and other upload constraints: `claude-config-platform-reference`

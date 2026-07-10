@@ -65,7 +65,7 @@ Trial a risky new rule or skill in ONE project first — its `.claude/skills/` o
 
 - No claiming success without observed behavior. "The model said it would comply" is not evidence; neither is "the edit reads well".
 - A passed trigger test proves loading, not adherence. Claim only what the test measured.
-- Negative results get recorded, not discarded — they are the regression baseline for Section 5. Convention (candidate): keep the case list plus dated pass/fail one-liners in an `evals.md` inside the skill's own folder (it ships in the upload zip via `sync.ps1`, so keep it terse); for CLAUDE.md/settings changes, attach cases to the change record per `claude-config-change-control`. This repo has no git history to hold evidence (see `claude-config-architecture`): if a result isn't written to a file, it never happened.
+- Negative results get recorded, not discarded — they are the regression baseline for Section 5. Convention (candidate): keep the case list plus dated pass/fail one-liners in an `evals.md` inside the skill's own folder (it ships in the upload zip via `sync.ps1`, so keep it terse); for CLAUDE.md/settings changes, attach cases to the change record per `claude-config-change-control`. The repo is git-backed (2026-07-10), but the convention stands unchanged: if a result isn't written to a file, it never happened — commit messages are not the evidence record, the experiment log and `evals.md` files are.
 - Date-stamp every recorded result — platform behavior drifts, and undated evidence cannot expire.
 
 ## When NOT to use this skill

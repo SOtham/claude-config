@@ -21,7 +21,7 @@ Terms: a **symbolic link (symlink)** is a filesystem pointer to another file or 
 
 All commands **PowerShell**, unelevated, tested 2026-07-08 unless labeled otherwise.
 
-1. Restore `C:\Dev\claude-config\` from backup or copy it from the old machine. The source is **not a git repository** today (no history to clone — known weak point, see `claude-config-architecture`).
+1. Clone the canonical source (git repo with private remote since 2026-07-10): `git clone https://github.com/SOtham/claude-config.git C:\Dev\claude-config` — needs an authenticated `gh`/git; fallback: restore from backup or copy from the old machine. Note: the remote holds committed state only.
 2. Ensure the target directory exists:
    ```powershell
    New-Item -ItemType Directory -Force "$HOME\.claude" | Out-Null
