@@ -44,6 +44,25 @@ Two layers. **Method skills** (generic, no prefix) apply in any repo. **Meta ski
 
 Each is invocable as `/<name>` and auto-loads when relevant. Deliberately not duplicated: Claude Code bundled skills (`/code-review`, `/simplify`, `/verify`, `/security-review`, and `/loop`/`/schedule` — which own *scheduling* recurring runs; the personal `loops` skill owns only the design discipline, per experiment-log entry #4) and Anthropic's official document/frontend skills.
 
+## How skills actually load (measured 2026-07-10/11)
+
+```
+User prompt
+   ▼
+Interactive session ─── auto-loads matching skills from their descriptions (2/2 measured, both tiers)
+   │
+   │  spawns subagent / headless run
+   │  ⚠ nothing is forwarded automatically — the child gets only what its task prompt says
+   ▼
+Subagent / headless session
+   • sees the skill list and CLAUDE.md in context, but loads nothing on its own (0/9 measured)
+   • loads exactly what the task prompt names (6/6 measured)
+```
+
+- **Interactive sessions**: descriptions do the routing — nothing to do.
+- **Delegated work (subagents)**: the orchestrating agent must write the directive into the task prompt — name the skill ("Load `/root-cause` first, then…") or paste the scaffold block from `claude-config-model-uplift`. That is *doctrine the orchestrator follows* (`orchestrate` + `claude-config-model-uplift` carry it), not platform enforcement: no hook event reaches subagents and system-prompt injection doesn't trigger loads (tested and retired — experiment-log entries #8 and #12). Verify from the child's transcript (`"skill":"…"` records), never from its self-report.
+- **Headless runs you or a script launch** (`claude -p`, `/schedule` routines): there is no orchestrator — put the skill directive in the prompt text itself (as `claude-config-research/scripts/run-m1.sh` does).
+
 ## Editing a skill
 
 Gate the change first per the `claude-config-change-control` skill (classification, non-negotiables, evidence). Then:
@@ -69,4 +88,4 @@ User-level `~/.claude/` never carries over to Claude Code web sessions. Routes t
 | 10 `claude-config-*` meta skills | ❌ they describe THIS library — meaningless elsewhere | ✅ they travel with the clone |
 | CLAUDE-SNIPPET.md | ✅ paste into the repo's CLAUDE.md (rules for web/teammates) | n/a |
 | CLAUDE.md / settings.json | ❌ personal — repos get the snippet instead | ✅ linked by install.ps1; review `model` key |
-| Skill-loading caveat | Interactive sessions auto-load skills; **subagents/headless do NOT** (0/9 measured) — delegated prompts must name the skill or carry the `claude-config-model-uplift` scaffold | same |
+| Skill-loading caveat | See "How skills actually load" above — installation makes skills *available* everywhere; only interactive use makes them *automatic* | same |
