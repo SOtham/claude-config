@@ -5,12 +5,12 @@ description: Design contract of this config library - settings.json/CLAUDE.md/sk
 
 # Claude-Config Architecture
 
-The load-bearing design decisions of `C:\Dev\claude-config`, why each was made, the invariants that must always hold, and the weak points stated plainly. This skill owns *why the system is shaped this way* — it contains no runbooks. Mechanics live in `claude-config-distribution`, change gates in `claude-config-change-control`. Judge every architectural question against the purpose in Section 6.
+The load-bearing design decisions of `<clone>`, why each was made, the invariants that must always hold, and the weak points stated plainly. This skill owns *why the system is shaped this way* — it contains no runbooks. Mechanics live in `claude-config-distribution`, change gates in `claude-config-change-control`. Judge every architectural question against the purpose in Section 6.
 
 ## 1. The system in one picture
 
 ```
-C:\Dev\claude-config\                     CANONICAL SOURCE — edit here (git repo; private remote github.com/SOtham/claude-config)
+<clone>\                                  CANONICAL SOURCE — edit here (git repo; private remote)
 ├── CLAUDE.md / settings.json / sync.ps1 / CLAUDE-SNIPPET.md / README.md
 └── skills\<name>\SKILL.md
       │
@@ -24,9 +24,9 @@ C:\Dev\claude-config\                     CANONICAL SOURCE — edit here (git re
                                 copied into its .claude\skills\   (procedure: repo-setup)
 ```
 
-A *symlink* is a file-level link the OS resolves transparently; a *junction* is the Windows directory equivalent that needs no admin rights. Verified 2026-07-08: `~/.claude` holds 5 symlinks (`CLAUDE.md`, `settings.json`, `sync.ps1`, `CLAUDE-SNIPPET.md`, `README.md`) plus the `skills` junction, all resolving into `C:\Dev\claude-config`.
+A *symlink* is a file-level link the OS resolves transparently; a *junction* is the Windows directory equivalent that needs no admin rights. Verified 2026-07-08: `~/.claude` holds 5 symlinks (`CLAUDE.md`, `settings.json`, `sync.ps1`, `CLAUDE-SNIPPET.md`, `README.md`) plus the `skills` junction, all resolving into `<clone>`.
 
-**Path convention (README is the owner):** `C:\Dev\claude-config` throughout this library's skills denotes the clone root — the original machine's actual location, kept concrete so commands are copy-pasteable there. On another install, substitute your clone path; scripts (`install.ps1`, `sync.ps1`, diagnostics) self-derive from the clone and need no edits.
+**Path convention (README is the owner):** `<clone>` throughout this library denotes the clone's root directory — substitute your actual path when copy-pasting commands (`install.ps1` prints yours at the end of every run). Scripts (`install.ps1`, `sync.ps1`, diagnostics) self-derive from the clone and need no edits. The repo deliberately contains no machine-specific paths (swept 2026-07-11).
 
 | Surface | Delivery | Freshness |
 | --- | --- | --- |
@@ -57,8 +57,8 @@ This decision rule is the single home for rule placement; `claude-config-change-
 
 | Decision | Rationale | What breaks if violated |
 | --- | --- | --- |
-| Canonical source lives at `C:\Dev\claude-config`, outside `~/.claude`; `~/.claude` holds only links | One edit surface. `~/.claude` also accumulates runtime churn (generated `dist\`, caches, session state) that would bury hand-maintained files | Edits land in a dead copy; local sessions, zips, and repos silently diverge |
-| Links, not copies, into `~/.claude` | Claude Code reads `~/.claude` natively; links deliver canonical files with zero sync steps for the local surface | Replacing a link with a copy freezes that file — sessions load stale config with no error |
+| Canonical source lives at `<clone>`, outside `~/.claude`; `~/.claude` holds only links | One edit surface. `~/.claude` also accumulates runtime churn (generated `dist\`, caches, session state) that would bury hand-maintained files | Edits land in a dead copy; local sessions, zips, and repos silently diverge |
+| Links (default) into `~/.claude`; copies only as the explicit opt-out | Claude Code reads `~/.claude` natively; links deliver canonical files with zero sync steps. `install.ps1 -Mode Copy` (2026-07-10) is the supported no-reparse-points alternative — real files, refresh = `git pull` + re-run, doctor WARNs on the drift risk | An *unchosen* copy (clobbered link, or hand-copied files) freezes that file — sessions load stale config with no error |
 | Generic method skills carry no prefix; library-maintenance skills use `claude-config-*` | Method skills (`writing-code`, `architect`, …) apply in any repo and upload for general use; the prefix keeps meta procedures from triggering during ordinary engineering work | Meta skills auto-load into normal coding sessions; routing table gets ambiguous |
 | No duplication of Claude Code bundled skills (`/code-review`, `/simplify`, `/verify`, `/security-review`) or Anthropic's official document/frontend skills (README doctrine) | A copy drifts from its maintained upstream and competes with it for triggering | Two skills match one request; the stale copy sometimes wins |
 | Rules written as MUST/SHOULD with the reason attached | Models generalize from the *why* (principle: `prompt-craft`); a bare rule is the first thing dropped under context pressure (Assumption — still unmeasured: the achieved M1/M2 tested trigger recall and a description A/B, not rule generalization; an adherence-scoring experiment in `claude-config-research` would) | Cargo-cult or abandoned compliance in long sessions |
@@ -68,7 +68,7 @@ This decision rule is the single home for rule placement; `claude-config-change-
 
 Automated checks for these live in `claude-config-diagnostics`; the list here is the contract.
 
-1. Every config file Claude Code reads from `~/.claude` is a link resolving into `C:\Dev\claude-config` (the 5 symlinks + `skills` junction of Section 1). `dist\` is the only generated, non-linked artifact — never hand-edit it.
+1. Every config file Claude Code reads from `~/.claude` is a link resolving into `<clone>` (the 5 symlinks + `skills` junction of Section 1). `dist\` is the only generated, non-linked artifact — never hand-edit it.
 2. The 9 secrets deny rules in `settings.json` are present and never weakened (full list: `settings.json` / `claude-config-platform-reference` §2).
 3. `CLAUDE.md` stays under ~120 lines; procedures do not accumulate there.
 4. For every skill: folder name = frontmatter `name` (the YAML block at the top of SKILL.md) = zip name, and `description` ≤200 characters (rationale and recipe: `claude-config-skill-authoring`; platform limits: `claude-config-platform-reference`).
@@ -79,7 +79,7 @@ Automated checks for these live in `claude-config-diagnostics`; the list here is
 
 | Weak point | Why it matters | Status | Addressed by |
 | --- | --- | --- | --- |
-| **Version control** — was the top weak point; **closed 2026-07-10**: git repo with private remote `github.com/SOtham/claude-config` (owner-authorized) | History, diff review, and revert now exist — for committed state only | closed | Residual: single owner, no PR review — `claude-config-change-control` gates stay mandatory, and every shipped change must be committed (uncommitted edits remain unprotected) |
+| **Version control** — was the top weak point; **closed 2026-07-10**: git repo with a private remote (owner-authorized; `git remote -v` shows it) | History, diff review, and revert now exist — for committed state only | closed | Residual: single owner, no PR review — `claude-config-change-control` gates stay mandatory, and every shipped change must be committed (uncommitted edits remain unprotected) |
 | **Manual zip re-upload to claude.ai** | Web sessions run stale skills whenever an upload is skipped. Observed 2026-07-09: 25 skill folders vs 15 `dist\` zips — re-check with the drift one-liner in Provenance | open | Post-change protocol: `claude-config-change-control`; staleness check: `claude-config-diagnostics` |
 | **Adherence measurement incomplete** | Trigger-recall is now harnessed and gated (M1–M3, entries #3–#5) — description changes ship on measurement; *adherence* beyond loading (does the session follow the loaded method?) still rests on manual n=3 field A/Bs (entries #7/#9) | partially closed 2026-07-10 | Research program: `claude-config-research`; manual protocols: `claude-config-validation` |
 | **Single-machine setup** | Links are absolute paths on one Windows 11 machine; committed content now survives disk loss via the private remote, links and uncommitted work do not | mitigated 2026-07-10 | Rebuild runbook: `claude-config-distribution` — clone the remote, recreate the links |
@@ -102,9 +102,9 @@ Owner statement (2026-07-07): this library exists to transfer top-tier ("Fable-c
 Written 2026-07-08; inventory re-verified 2026-07-09: 25 skill folders, 15 zips in `~/.claude\dist`, CLAUDE.md at 104 lines. Counts drift — re-run the one-liners below rather than trusting any snapshot. All commands are PowerShell, tested:
 
 - Links resolve to canonical source: `Get-ChildItem $HOME\.claude | Where-Object { $_.LinkType } | ForEach-Object { "{0} [{1}] -> {2}" -f $_.Name, $_.LinkType, ($_.Target -join ',') }`
-- Git state (expect `True` since 2026-07-10; remote check: `git -C C:\Dev\claude-config remote -v` → private github.com/SOtham/claude-config): `Test-Path C:\Dev\claude-config\.git`
+- Git state (expect `True` since 2026-07-10; remote check: `git -C <clone> remote -v` → the private remote): `Test-Path <clone>\.git`
 - CLAUDE.md within budget (expect ≤ ~120): `(Get-Content "$HOME\.claude\CLAUDE.md").Count`
-- Budget doctrine source: the HTML maintainer comment at the top of `C:\Dev\claude-config\CLAUDE.md`
-- Secrets deny rules intact: read `permissions.deny` in `C:\Dev\claude-config\settings.json`
+- Budget doctrine source: the HTML maintainer comment at the top of `<clone>\CLAUDE.md`
+- Secrets deny rules intact: read `permissions.deny` in `<clone>\settings.json`
 - Skill-vs-zip drift: `(Get-ChildItem "$HOME\.claude\skills" -Directory).Count` vs `(Get-ChildItem "$HOME\.claude\dist" -Filter *.zip).Count`
 - Purpose statement: reconfirm with the owner; it is a policy, not a file fact.

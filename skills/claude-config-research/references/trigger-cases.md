@@ -1,6 +1,6 @@
 # Trigger-recall case set — v1, frozen 2026-07-08
 
-The fixed corpus for measuring whether each skill's `description` fires on realistic task phrasings. Derived from the actual frontmatter descriptions of the 25 `SKILL.md` files on disk in `C:\Dev\claude-config\skills` on 2026-07-08 (every description read verbatim before writing its cases).
+The fixed corpus for measuring whether each skill's `description` fires on realistic task phrasings. Derived from the actual frontmatter descriptions of the 25 `SKILL.md` files on disk in `<clone>\skills` on 2026-07-08 (every description read verbatim before writing its cases).
 
 **Rules of use**
 

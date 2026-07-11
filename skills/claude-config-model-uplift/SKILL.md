@@ -109,6 +109,6 @@ Written 2026-07-08 (zero measured adherence data existed then). 2026-07-10: fiel
 - The six CLAUDE.md sections quoted here still exist (PowerShell, tested): `Select-String -Path "$HOME\.claude\CLAUDE.md" -Pattern '^## (Skill Routing|Planning Gate|Verification|Delegation|Terminal Operations|Future Compatibility)'` — expect 6 hits; re-check quoted phrases after any CLAUDE.md edit
 - Diagnostics scripts present and runnable (tested 2026-07-08: doctor HEALTHY, lint 0 FAIL on a complete tree; lint exits 1 while any skill is half-authored): the two Phase 0 invocations
 - Web-availability fact (user-level `~/.claude` never reaches web sessions): `claude-config-platform-reference` §6; README "Web availability (verified)"
-- SessionStart missing-CLAUDE.md hook still present: read `hooks` in `C:\Dev\claude-config\settings.json`
+- SessionStart missing-CLAUDE.md hook still present: read `hooks` in `<clone>\settings.json`
 - Sibling inventory (PowerShell, tested): `Get-ChildItem "$HOME\.claude\skills" -Directory -Filter 'claude-config-*' | Select-Object -ExpandProperty Name`
 - Owner purpose statement (2026-07-07): a policy, not a file fact — reconfirm with the owner

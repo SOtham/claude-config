@@ -13,7 +13,7 @@ These instructions apply across all repositories. Repo-level `CLAUDE.md`, explic
 ## Environment Facts
 
 - Windows 11. Primary shell is Windows PowerShell 5.1: no `&&`/`||` chaining, no ternary or null-coalescing operators; `Out-File`/`Set-Content` default to UTF-16 — pass `-Encoding utf8` for files other tools will read. Prefer the Bash tool for POSIX-style scripts.
-- Personal skills: canonical source is `C:\Dev\claude-config\skills\`, reached via the `~/.claude` links (same files). Gate any change per `claude-config-change-control` first; after editing, run `powershell -ExecutionPolicy Bypass -File "$HOME\.claude\sync.ps1"` to rebuild the claude.ai upload zips in `~/.claude/dist/`, then remind me to re-upload the changed zips (claude.ai → Settings → Capabilities → Skills). Setup overview: `~/.claude/README.md`.
+- Personal skills: canonical source is the claude-config clone's `skills\` folder, reached via the `~/.claude` links (same files). Gate any change per `claude-config-change-control` first; after editing, run `powershell -ExecutionPolicy Bypass -File "$HOME\.claude\sync.ps1"` to rebuild the claude.ai upload zips in `~/.claude/dist/`, then remind me to re-upload the changed zips (claude.ai → Settings → Capabilities → Skills). Setup overview: `~/.claude/README.md`.
 
 ## Core Principles
 

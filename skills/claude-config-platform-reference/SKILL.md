@@ -12,7 +12,7 @@ What the Claude Code platform actually does with this library's files — dated,
 **CLAUDE.md hierarchy** (Docs: https://code.claude.com/docs/en/memory). Loaded at session start, concatenated broadest-first — later files never override earlier ones, they stack:
 
 1. Managed policy — Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` (not present here)
-2. User — `~/.claude/CLAUDE.md` (in this setup a symlink to `C:\Dev\claude-config\CLAUDE.md`)
+2. User — `~/.claude/CLAUDE.md` (in this setup a symlink to `<clone>\CLAUDE.md`)
 3. Project — `./CLAUDE.md` or `./.claude/CLAUDE.md`, plus every parent directory up the tree from cwd
 4. Local — `./CLAUDE.local.md`, appended after `CLAUDE.md` at the same directory level
 
@@ -27,7 +27,7 @@ What the Claude Code platform actually does with this library's files — dated,
 
 ## 2. settings.json keys used here (as of 2026-07-08)
 
-Current file: `C:\Dev\claude-config\settings.json` (Local). Semantics per the Docs settings page; none of these keys is marked experimental there.
+Current file: `<clone>\settings.json` (Local). Semantics per the Docs settings page; none of these keys is marked experimental there.
 
 | Key | Current value | What it does (Docs) |
 | --- | --- | --- |
@@ -64,7 +64,7 @@ fi
 Docs: https://code.claude.com/docs/en/skills.
 
 - **Discovery locations**: enterprise (managed) → personal `~/.claude/skills/<name>/SKILL.md` → project `.claude/skills/<name>/SKILL.md` → plugin `<plugin>/skills/<name>/SKILL.md` (namespaced `plugin:skill`, cannot collide). On a name collision, enterprise beats personal beats project; any level overrides a bundled skill of the same name. Nested `.claude/skills/` below cwd load on demand; parent directories up to the repo root load too (Docs).
-- **Symlinks are supported** for skill directories (Docs) — this is why `~/.claude/skills` being a junction (Windows directory link) to `C:\Dev\claude-config\skills` works; Local: this session loaded skills through it.
+- **Symlinks are supported** for skill directories (Docs) — this is why `~/.claude/skills` being a junction (Windows directory link) to `<clone>\skills` works; Local: this session loaded skills through it.
 - **Frontmatter the platform reads** — frontmatter is the YAML block between `---` lines atop SKILL.md (all fields optional; `description` recommended): `name` is display-only — the **directory name** is the `/command` name, which is why this repo pins folder = name (see `claude-config-skill-authoring`). Other fields: `description`, `when_to_use`, `disable-model-invocation`, `user-invocable`, `allowed-tools`, `disallowed-tools`, `paths`, `model`, `effort`, `context: fork` + `agent`, `hooks`, `argument-hint`, `arguments`, `shell`. Full table at the URL. Malformed YAML → body still loads with empty metadata, so `/name` works but auto-loading breaks (Docs).
 - **When context is spent**: every skill's name+description sits in context all session (per-entry cap 1,536 chars of `description`+`when_to_use` combined; the whole listing is budgeted at ~1% of the context window — `/doctor` reports truncation). The **body** loads only on invocation — you typing `/name`, or Claude matching the description — and then stays in context for the rest of the session. After compaction, each invoked skill is re-attached up to 5,000 tokens within a 25,000-token shared budget, most-recent first (Docs).
 - **Live edits**: changes under `~/.claude/skills/` take effect within the current session (Docs; this repo's README states the weaker "new sessions pick it up" — both hold).
@@ -91,7 +91,7 @@ Consequence: any behavior this library must guarantee in web sessions has to tra
 
 ## 7. Headless / programmatic use (as of 2026-07-08)
 
-Verified two ways: running `--help` on the local binary v2.1.195 (Local; note `claude` was not on PATH in this session's shells — the binary is `C:\Users\User\.local\bin\claude.exe`) and Docs https://code.claude.com/docs/en/headless. Flags confirmed in both unless noted:
+Verified two ways: running `--help` on the local binary v2.1.195 (Local; note `claude` was not on PATH in this session's shells — the binary lives at `$env:USERPROFILE\.local\bin\claude.exe`) and Docs https://code.claude.com/docs/en/headless. Flags confirmed in both unless noted:
 
 - `-p, --print` — non-interactive: print response and exit; reads stdin (piped input capped at 10MB — Docs).
 - `--output-format text|json|stream-json` — `json` returns `result`, `session_id`, `total_cost_usd` (Docs) → machine-gradable runs.
@@ -123,6 +123,6 @@ All facts dated **2026-07-08**; local Claude Code **2.1.195** (`claude --version
 - Skills discovery, frontmatter table, 1,536-char cap and listing budget, body lifecycle: re-fetch https://code.claude.com/docs/en/skills
 - Headless flags: re-fetch https://code.claude.com/docs/en/headless and run (PowerShell) `& "$env:USERPROFILE\.local\bin\claude.exe" --help`
 - Local version: (PowerShell) `& "$env:USERPROFILE\.local\bin\claude.exe" --version`
-- Current settings values and the hook command: read `C:\Dev\claude-config\settings.json`
+- Current settings values and the hook command: read `<clone>\settings.json`
 - 200-char upload limit: docs-verified at https://claude.com/docs/skills/how-to (re-fetch to confirm still 200); reject-vs-truncate mechanism still undocumented — a real upload of a 201-char description is the definitive test. Zip layout: `sync.ps1` header. Upload UI path drifts (docs: Settings > Capabilities; help center: Customize > Skills) — re-check in-product.
 - Web-vs-local finding: README "Web availability (verified)"; re-test by opening a Claude Code web session and checking whether personal skills appear

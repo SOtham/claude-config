@@ -28,7 +28,7 @@ Mechanism (verified from https://code.claude.com/docs/en/skills, fetched 2026-07
    Select-String -Path $t.FullName -Pattern '"name":"Skill","input":\{"skill":"([^"]+)"' -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
    ```
 
-   Empty output = no skill loaded. Find `<munged-cwd>` by listing `~/.claude/projects` — path punctuation becomes `-` (e.g. `C:\Dev\claude-config` → `c--Dev-claude-config`).
+   Empty output = no skill loaded. Find `<munged-cwd>` by listing `~/.claude/projects` — path punctuation becomes `-` (e.g. `<clone>` → `c--Dev-claude-config`).
 2. **Watch the live session** for the Skill tool call. That the interactive UI renders it visibly is Unverified — calibrate once by running a case and cross-checking with the grep above.
 3. **Distinctive artifact in the output** — e.g. the `## Proposed Architecture & Implementation Plan` header only `architect` produces. This is evidence the body was *followed*, not merely loaded.
 4. **Asking the model** "did you load skill X?" — self-report, NOT evidence (Section 7). Use only to cross-check 1–3.
@@ -82,6 +82,6 @@ Written 2026-07-08. Re-verify volatile facts before trusting them:
 
 - Skill loading mechanics (descriptions always in context, body loads via Skill tool, live change detection, `/doctor` listing report, project-vs-personal precedence): re-fetch https://code.claude.com/docs/en/skills
 - Transcript location and record shape: `Get-ChildItem "$HOME\.claude\projects"`, then `Select-String` any `.jsonl` for `"name":"Skill"` (tested 2026-07-08 — found a real `usage-credits` invocation). The Section 2 pattern assumes `"name"` and `"input"` are adjacent in the JSON; if it stops matching, fall back to `-Pattern '"name":"Skill"'` and read the matching lines.
-- New-session pickup claim: "Editing a skill" step 1 in `C:\Dev\claude-config\README.md`; `sync.ps1` header states the same
-- Adherence observable examples: Debugging, Planning Gate, and Verification sections of `C:\Dev\claude-config\CLAUDE.md`
+- New-session pickup claim: "Editing a skill" step 1 in `<clone>\README.md`; `sync.ps1` header states the same
+- Adherence observable examples: Debugging, Planning Gate, and Verification sections of `<clone>\CLAUDE.md`
 - `evals.md` convention: candidate — check any skill folder for the file to see whether it was adopted

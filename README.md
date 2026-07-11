@@ -1,12 +1,12 @@
 # ~/.claude — Personal Claude Setup
 
-Maintained source is a **git clone of this repo** (private remote: `github.com/SOtham/claude-config`), linked or copied into `~/.claude\` so Claude Code picks it up automatically. `<clone>` below means wherever you put the clone.
+Maintained source is a **git clone of this repo** (kept on a private remote — `git remote -v` on any existing clone shows it), linked or copied into `~/.claude\` so Claude Code picks it up automatically.
 
-**Path convention:** the library's skills and docs use `C:\Dev\claude-config` in runnable examples — that is the *original machine's* clone root, kept concrete so commands stay copy-pasteable there. On any other install, substitute your clone path; every script derives its locations from the clone automatically.
+**Path convention:** `<clone>` throughout the library's skills and docs means your clone's root directory — substitute your actual path when copy-pasting commands. Every script derives its locations from the clone automatically and needs no editing.
 
 ## Install on a new machine
 
-1. `git clone https://github.com/SOtham/claude-config.git` — any destination works.
+1. `git clone <repo-url>` — any destination works (`<repo-url>` = this repo's remote).
 2. `powershell -ExecutionPolicy Bypass -File <clone>\install.ps1` — idempotent: creates the links below, backs up anything real it displaces, then runs the health check. File symlinks want Developer Mode or an elevated shell (the script falls back to copies and says so). **Don't want links at all?** Add `-Mode Copy`: real files instead (tested 2026-07-10 — fresh, refresh, and doctor paths) — trade-off: edits don't propagate; refresh = `git pull` + re-run; the doctor reports copy-mode as WARN, not FAIL. *(Link-mode fresh-machine path not yet exercised end-to-end; its no-op and health paths are tested.)*
 3. Review `settings.json` — `model` and `effortLevel` are personal preferences. If your clone isn't at the convention path, also update the "Personal skills" line in `CLAUDE.md` (install.ps1 reminds you).
 4. For claude.ai/web parity: run `sync.ps1` and upload the `dist\` zips (see "Web availability").

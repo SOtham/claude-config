@@ -18,7 +18,7 @@ Measure, don't eyeball. Three PowerShell scripts in this skill's `scripts\` fold
 
 ## 2. The three scripts — exact invocations
 
-**PowerShell** (tested 2026-07-08 under Windows PowerShell 5.1; both this `$HOME` junction path and the canonical `C:\Dev\claude-config\skills\...` path work — each script derives the repo root from its own location and resolves the junction — a Windows directory link, here `~/.claude\skills` pointing at the repo's `skills\` folder):
+**PowerShell** (tested 2026-07-08 under Windows PowerShell 5.1; both this `$HOME` junction path and the canonical `<clone>\skills\...` path work — each script derives the repo root from its own location and resolves the junction — a Windows directory link, here `~/.claude\skills` pointing at the repo's `skills\` folder):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File "$HOME\.claude\skills\claude-config-diagnostics\scripts\doctor.ps1"
@@ -28,7 +28,7 @@ powershell -ExecutionPolicy Bypass -File "$HOME\.claude\skills\claude-config-dia
 
 | Script | Checks | Notes |
 | --- | --- | --- |
-| `doctor.ps1` | Repo top-level files present; each expected `~/.claude` entry has the right link type (5 SymbolicLinks + `skills` Junction) and target; `settings.json` parses and all 9 baseline secrets deny rules present; CLAUDE.md vs ~120-line budget (WARN only) | One-shot system health |
+| `doctor.ps1` | Repo top-level files present; each expected `~/.claude` entry has the right link type (5 SymbolicLinks + `skills` Junction) and target — a real file/dir instead is a **WARN**, not FAIL, since 2026-07-10 (legitimate on an `install.ps1 -Mode Copy` install; suspicious on a link-mode one); `settings.json` parses and all 9 baseline secrets deny rules present; CLAUDE.md vs ~120-line budget (WARN only) | One-shot system health |
 | `lint-skills.ps1` | Per `skills\<dir>`: SKILL.md exists; frontmatter (the `---`-delimited YAML block) parses; `name:` = folder name; `description:` non-empty and ≤200 chars; >160 lines is a WARN; duplicate names | Tolerates half-written skills: every broken state is a reported finding, never a crash |
 | `check-dist.ps1` | Per skill: `~/.claude/dist/<name>.zip` exists and is newer than the newest file in the skill folder; orphan zips (zip without folder); WARNs if a second `dist\` exists inside the repo | A brand-new skill is EXPECTED to show `zip MISSING` until `sync.ps1` runs — as of 2026-07-08 the new `claude-config-*` skills all do |
 
@@ -42,8 +42,8 @@ Real excerpts from the 2026-07-08 test runs (mid-authoring-campaign snapshots �
 
 ```
 == Check B: ~/.claude links ==
-[PASS] ~/.claude\CLAUDE.md is a SymbolicLink -> C:\Dev\claude-config\CLAUDE.md
-[PASS] ~/.claude\skills is a Junction -> C:\Dev\claude-config\skills
+[PASS] ~/.claude\CLAUDE.md is a SymbolicLink -> <clone>\CLAUDE.md
+[PASS] ~/.claude\skills is a Junction -> <clone>\skills
 == Check C: settings.json ==
 [PASS] settings.json parses as JSON
 [PASS] all 9 baseline secrets deny rules present
@@ -64,7 +64,8 @@ dist summary: 23 skill(s), 15 zip(s); 8 missing, 0 stale; 8 FAIL, 0 WARN   (exit
 | Finding | What it means | Where to go next |
 | --- | --- | --- |
 | doctor: `repo file MISSING` | Canonical repo damaged, moved, or renamed | Triage: `claude-config-debugging`; rebuild runbook: `claude-config-distribution` |
-| doctor: `~/.claude entry MISSING` / `expected SymbolicLink, found ...` / `target ... does not match` | Link layer broken — Claude Code is reading stale config or none at all | Recreate links per `claude-config-distribution`; triage first if cause unknown: `claude-config-debugging` |
+| doctor: `~/.claude entry MISSING` / `expected SymbolicLink, found ...` / `target ... does not match` | Link layer broken — Claude Code is reading stale config or none at all | Recreate links: `install.ps1` (or manual runbook in `claude-config-distribution`); triage first if cause unknown: `claude-config-debugging` |
+| doctor WARN: `... is a real file, not a link` | Copy-mode install (expected — refresh via `install.ps1 -Mode Copy` after `git pull`) OR, on a link-mode machine, a link clobbered by a real file (debugging row i) | Know which install mode this machine uses; relink via `install.ps1` if it should be link-mode |
 | doctor: `settings.json does NOT parse` | The ENFORCED layer is dead — deny rules may be inactive | Fix immediately; ship the fix through `claude-config-change-control` |
 | doctor: `secrets deny rule MISSING` | Secrets protection silently weakened | Restore via `claude-config-change-control` (deny rules are a non-negotiable there); investigate how it happened: `claude-config-debugging` |
 | doctor WARN: `CLAUDE.md is N lines - over the ~120-line budget` | Every session pays for the overage; adherence drops (maintainer-comment doctrine; Assumption — still unmeasured: the achieved M2 tested a description A/B, not budget effects) | Trim before adding more; budget rationale: `claude-config-architecture`; the trim is a change → `claude-config-change-control` |
@@ -75,7 +76,7 @@ dist summary: 23 skill(s), 15 zip(s); 8 missing, 0 stale; 8 FAIL, 0 WARN   (exit
 | check-dist: `zip MISSING` | Skill never packaged — web sessions can't see it (expected for brand-new skills) | Run `sync.ps1` + upload: `claude-config-distribution` |
 | check-dist: `zip STALE` | Local edits not yet in the zip — claude.ai serves the old version | Run `sync.ps1` + re-upload the named zips: `claude-config-distribution` |
 | check-dist: `orphan zip` | Skill folder deleted or renamed; a stale upload may still be live on claude.ai | Reconcile per `claude-config-distribution` (remove zip and claude.ai upload if retired) |
-| check-dist WARN: `second dist exists at C:\Dev\claude-config\dist` | `sync.ps1` was invoked via its canonical repo path — it derives `dist\` from its invoked path, so the documented `$HOME\.claude\sync.ps1` invocation is load-bearing | `claude-config-distribution` owns this behavior; remove the repo-side copy |
+| check-dist WARN: `second dist exists at <clone>\dist` | `sync.ps1` was invoked via its canonical repo path — it derives `dist\` from its invoked path, so the documented `$HOME\.claude\sync.ps1` invocation is load-bearing | `claude-config-distribution` owns this behavior; remove the repo-side copy |
 
 ## 4. What these scripts cannot measure
 
@@ -96,4 +97,4 @@ Written 2026-07-08. All three scripts ran clean that day via `powershell -Execut
 - **~120-line CLAUDE.md budget** (in `doctor.ps1`): source is the HTML maintainer comment at the top of `CLAUDE.md` — re-read it: `Get-Content "$HOME\.claude\CLAUDE.md" -TotalCount 9`.
 - **Expected `~/.claude` link inventory** (5 SymbolicLinks: CLAUDE.md, settings.json, sync.ps1, CLAUDE-SNIPPET.md, README.md + `skills` Junction): `Get-ChildItem "$HOME\.claude" -Force | Where-Object { $_.LinkType } | Select-Object Name, LinkType, Target`.
 - **≤200-char description limit / >160-line guidance** (in `lint-skills.ps1`): limit owned by `claude-config-platform-reference`.
-- **dist location** (`$HOME\.claude\dist` in `check-dist.ps1`): follows from `sync.ps1` deriving paths from its invoked location — re-read the `$root`/`$dist` lines of `C:\Dev\claude-config\sync.ps1`; doctrine in `claude-config-distribution`.
+- **dist location** (`$HOME\.claude\dist` in `check-dist.ps1`): follows from `sync.ps1` deriving paths from its invoked location — re-read the `$root`/`$dist` lines of `<clone>\sync.ps1`; doctrine in `claude-config-distribution`.

@@ -5,7 +5,7 @@ description: Author or edit a skill in this config library - new-vs-extend decis
 
 # Claude-Config Skill Authoring
 
-How to author or edit a skill in `C:\Dev\claude-config\skills\` at the house standard. A *skill* here is a folder holding a `SKILL.md`: its `description` is visible to every session as the auto-load trigger, and its body loads only when relevant (or when invoked as `/<name>`). This library exists to transfer top-tier engineering discipline to cheaper-tier sessions — a skill earns its place only if it changes what a lightweight-tier session actually does. Work the sections in order.
+How to author or edit a skill in `<clone>\skills\` at the house standard. A *skill* here is a folder holding a `SKILL.md`: its `description` is visible to every session as the auto-load trigger, and its body loads only when relevant (or when invoked as `/<name>`). This library exists to transfer top-tier engineering discipline to cheaper-tier sessions — a skill earns its place only if it changes what a lightweight-tier session actually does. Work the sections in order.
 
 ## 1. Decide: new skill, extension, or nothing
 
@@ -109,7 +109,7 @@ $d = (Get-Content "$HOME\.claude\skills\<name>\SKILL.md" | Select-String '^descr
 Written 2026-07-07 against the repo state on that date (15 method skills, single `SKILL.md` per folder, frontmatter keys `name` + `description` only). Re-verify volatile facts before trusting them:
 
 - Skill inventory and line counts (PowerShell, tested): `Get-ChildItem "$HOME\.claude\skills" -Directory | ForEach-Object { "{0}: {1} lines" -f $_.Name, (Get-Content (Join-Path $_.FullName 'SKILL.md')).Count }`
-- Folder→zip naming coupling: read the header and `$name` lines of `C:\Dev\claude-config\sync.ps1`
+- Folder→zip naming coupling: read the header and `$name` lines of `<clone>\sync.ps1`
 - Any skill's description length: the counter one-liner in Section 4
 - ≤200-char description limit and other upload constraints: `claude-config-platform-reference`, or attempt an upload at claude.ai → Settings → Capabilities → Skills
-- House editing constraints summary: "Editing a skill" section of `C:\Dev\claude-config\README.md`
+- House editing constraints summary: "Editing a skill" section of `<clone>\README.md`

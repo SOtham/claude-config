@@ -26,8 +26,8 @@ Tests T1–T7 are spelled out in Section 2 with real, verified output.
 | e | Edits to a skill not picked up | Local: per docs, live edits normally take effect within the current session (`claude-config-platform-reference` §4); README's "new session picks it up" is the guaranteed-weaker fallback. Web: the uploaded zip is stale | Check `/skills` (T7) in-session; if still stale, open a new session | New session locally if live pickup fails. Web: rebuild + re-upload (post-change protocol: `claude-config-change-control`) |
 | f | SessionStart hook doesn't fire / shows nothing | Silence is **healthy** in repos that have a CLAUDE.md (the hook only speaks when one is missing); else settings.json invalid or hook command erroring | T6 (run the hook standalone), T3; in-session `/hooks` and `claude --debug hooks` (T7) | If T6 behaves as specified, the hook is fine. Else fix settings.json; hook edits are picked up automatically by the file watcher (hooks docs, see Provenance) |
 | g | settings.json key seems ignored | JSON syntax error; same key overridden by a closer scope (repo `.claude/settings.json` / `settings.local.json`); key put in `~/.claude.json` (app state, not settings); invalid key name | T3; `/doctor` and `/status` (T7); grep the repo's `.claude/settings*.json` for the same key | Fix the JSON or move the key. Precedence rules: `claude-config-platform-reference` |
-| h | CLAUDE.md rule loaded but not followed | Config is fine — CLAUDE.md is context, not enforcement; this is an adherence problem | `/memory` (T7) lists the file AND the rule is present verbatim in `C:\Dev\claude-config\CLAUDE.md` | Not a config bug. Evidence protocol → `claude-config-validation`; sustained shortfall on cheaper tiers → `claude-config-model-uplift`; must-be-guaranteed rules → hooks/permissions (layer split: `claude-config-architecture`) |
-| i | Edits land in the wrong place / `~/.claude` content stale | A symlink or the skills junction was replaced by a real file/dir, splitting the two copies | T1 — empty `LinkType` means real file, i.e. broken | Recreate links per the rebuild runbook: `claude-config-distribution` |
+| h | CLAUDE.md rule loaded but not followed | Config is fine — CLAUDE.md is context, not enforcement; this is an adherence problem | `/memory` (T7) lists the file AND the rule is present verbatim in `<clone>\CLAUDE.md` | Not a config bug. Evidence protocol → `claude-config-validation`; sustained shortfall on cheaper tiers → `claude-config-model-uplift`; must-be-guaranteed rules → hooks/permissions (layer split: `claude-config-architecture`) |
+| i | Edits land in the wrong place / `~/.claude` content stale | On a link-mode install: a symlink/junction was replaced by a real file/dir, splitting the copies. On a copy-mode install (`install.ps1 -Mode Copy`): real files are EXPECTED — "stale" just means a refresh is due | T1 — empty `LinkType` = real file; then ask which install mode this machine uses | Link-mode: relink via `install.ps1`. Copy-mode: `git pull` + `install.ps1 -Mode Copy` (runbook: `claude-config-distribution`) |
 | j | File garbled or other tools misread it | Written by PS 5.1 `Out-File`/`Set-Content` without `-Encoding utf8` → UTF-16 (incident I2) | T5 | Rewrite with `-Encoding utf8` (standing rule: CLAUDE.md → Environment Facts) |
 
 ## 2. Discriminating tests
@@ -40,7 +40,7 @@ T1–T6 were executed on this machine 2026-07-08; outputs shown are real. All ar
 Get-Item "$HOME\.claude\skills", "$HOME\.claude\CLAUDE.md", "$HOME\.claude\settings.json" | Select-Object Name, LinkType, Target | Format-List
 ```
 
-Healthy: `skills` shows `LinkType : Junction`, `Target : {C:\Dev\claude-config\skills}`; each file shows `LinkType : SymbolicLink` with its `C:\Dev\claude-config\...` target. An empty `LinkType` = real file = broken (row i).
+Healthy on a link-mode install: `skills` shows `LinkType : Junction`, `Target : {<clone>\skills}`; each file shows `LinkType : SymbolicLink` with its `<clone>\...` target. An empty `LinkType` = real file: broken on link-mode (row i), expected on a copy-mode install (`install.ps1 -Mode Copy`, 2026-07-10).
 
 **T2 — folder/frontmatter name match** (PowerShell):
 
@@ -74,7 +74,7 @@ Healthy: every entry starts with `<name>/` and uses `/`, e.g. real output for ro
 
 `255,254,...` = UTF-16 LE — broken for cross-tool use (row j). `239,187,191` = UTF-8 BOM — fine. Plain ASCII bytes (no BOM) — fine. Verified both ways with `Out-File` defaults vs `-Encoding utf8`.
 
-**T6 — run the SessionStart hook standalone** (bash): copy the `command` string from `hooks.SessionStart` in `C:\Dev\claude-config\settings.json` and run it in Git Bash inside the target repo. Verified behavior: in a git repo with no CLAUDE.md it prints the JSON `{"systemMessage":"This repo has no CLAUDE.md ..."}`; in a non-repo or a repo that has CLAUDE.md it prints nothing and exits 0 — **silence there is healthy**.
+**T6 — run the SessionStart hook standalone** (bash): copy the `command` string from `hooks.SessionStart` in `<clone>\settings.json` and run it in Git Bash inside the target repo. Verified behavior: in a git repo with no CLAUDE.md it prints the JSON `{"systemMessage":"This repo has no CLAUDE.md ..."}`; in a non-repo or a repo that has CLAUDE.md it prints nothing and exits 0 — **silence there is healthy**.
 
 **T7 — in-session and CLI probes** (verified against official docs 2026-07-08, not runnable inside a sandboxed subagent): `/context` (everything loaded, by category), `/skills`, `/memory`, `/hooks`, `/doctor`, `/status`, `/permissions`; `claude --debug hooks` (live hook evaluation log); `claude --safe-mode` (all customizations off — if the problem disappears, the cause is in this config; if it persists, look outside it). Source: https://code.claude.com/docs/en/debug-your-config
 
@@ -105,6 +105,6 @@ Written 2026-07-08. T1–T6 executed on this machine that day; T7 verified again
 
 - Link targets and junction: run T1.
 - Zip entry format: run T4 against any `~/.claude\dist\*.zip`.
-- Hook command text: read `hooks.SessionStart` in `C:\Dev\claude-config\settings.json`.
-- README claims (web availability; new-session pickup of skill edits): re-read the "Editing a skill" and "Web availability (verified)" sections of `C:\Dev\claude-config\README.md`.
+- Hook command text: read `hooks.SessionStart` in `<clone>\settings.json`.
+- README claims (web availability; new-session pickup of skill edits): re-read the "Editing a skill" and "Web availability (verified)" sections of `<clone>\README.md`.
 - In-session commands and CLI flags (`/doctor`, `/status`, `/skills`, `/hooks`, `/memory`, `/context`, `--debug`, `--safe-mode`): re-fetch https://code.claude.com/docs/en/debug-your-config — these are platform-owned and drift; the loading/precedence facts behind rows e and g are owned by `claude-config-platform-reference`.

@@ -4,7 +4,7 @@ The program-level record of every config hypothesis and its fate. **A result tha
 
 **Conventions**
 
-- One entry per hypothesis, newest last. Never delete or rewrite an entry; append corrections as a new dated line inside it.
+- One entry per hypothesis, newest last. Never delete or rewrite an entry; append corrections as a new dated line inside it. (One sanctioned exception, 2026-07-11: machine-specific paths were redacted repo-wide to generic forms — `<clone>`, "a real, unrelated repo" — by owner directive; no numbers, verdicts, or substance changed.)
 - The **Prediction** field must be written before the first test run. An entry whose prediction was written after the results says so explicitly (see entry #1).
 - Verdict vocabulary (lifecycle: `claude-config-research` §3.4): `candidate` | `trialed` | `adopted (via claude-config-change-control)` | `retired (negative recorded)` | `shipped unmeasured` (legacy/honesty label only — nothing new ships with this verdict). Milestone/infrastructure entries (observability, M-gates) may verdict `resolved`/`achieved`; the lifecycle vocabulary applies to config hypotheses.
 - Per-case pass/fail detail for a specific skill belongs in that skill's own `evals.md` (`claude-config-validation` §7); link to it from here rather than duplicating.
@@ -153,7 +153,7 @@ The program-level record of every config hypothesis and its fate. **A result tha
 
 - **Hypothesis:** The 0/9 no-unscaffolded-loads finding extends to real interactive Claude Code UI sessions (protocol: `references/interactive-ui-check.md`).
 - **Prediction:** The protocol pre-declared both directions: ~0 loads → doctrine universal; markedly better → surface differences matter and uplift Phase 0 must say so.
-- **Method / arms:** Owner ran the protocol at the real UI, 2026-07-10 ~23:08–23:09, fresh sessions, natural phrasings, back-to-back. **n=2 of 3** — probe 2 (writing-code, needs a candidate repo file) was skipped by the owner. Probe 1 ran in a real repo (`C:\Dev\Repos\TrialRun`). Detection: transcript grep (validation §2) by the orchestrator; probe sessions identified by content and mtime, an unrelated concurrent session excluded by content.
+- **Method / arms:** Owner ran the protocol at the real UI, 2026-07-10 ~23:08–23:09, fresh sessions, natural phrasings, back-to-back. **n=2 of 3** — probe 2 (writing-code, needs a candidate repo file) was skipped by the owner. Probe 1 ran in a real, unrelated repo on the owner's machine. Detection: transcript grep (validation §2) by the orchestrator; probe sessions identified by content and mtime, an unrelated concurrent session excluded by content.
 - **Cases run:** Probe 1 ("nightly build started failing…" → expect `root-cause`); probe 3 (trivia near-miss → expect none).
 - **Result:** **Probe 1 LOADED `root-cause`** — the first unscaffolded natural-phrasing skill load observed anywhere in this program (vs 0/9 on all scriptable surfaces). Probe 3: no loads (correct). Interactive-UI tally: **1/1 should-load, near-miss clean**.
 - **Negatives / anomalies:** (1) **Tier confound:** the owner's interactive sessions run the top reasoning tier (settings.json model), while the 0/9 scriptable tally is haiku/sonnet — surface and tier changed together, so this observation cannot distinguish "interactive UI auto-fires better" from "the top tier auto-fires better". (2) n=2, probe 2 skipped — one should-load data point. (3) Probe 1's repo context (TrialRun's own CLAUDE.md state) was not controlled.

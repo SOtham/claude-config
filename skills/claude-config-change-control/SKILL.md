@@ -5,7 +5,7 @@ description: Gate and ship changes to this config library - classification table
 
 # Claude-Config Change Control
 
-Every change to `C:\Dev\claude-config` ships through this skill — including "one-line" edits. This library's job is to transfer top-tier engineering discipline to cheaper-tier sessions; an unguarded config change silently degrades every future session in every repo; git (Section 5) gives an undo, but only for committed state — gate first, then commit. Work in order: classify (§1), respect the non-negotiables (§2), confirm the layer (§3), ship via the checklist (§4).
+Every change to `<clone>` ships through this skill — including "one-line" edits. This library's job is to transfer top-tier engineering discipline to cheaper-tier sessions; an unguarded config change silently degrades every future session in every repo; git (Section 5) gives an undo, but only for committed state — gate first, then commit. Work in order: classify (§1), respect the non-negotiables (§2), confirm the layer (§3), ship via the checklist (§4).
 
 ## 1. Classify the change
 
@@ -41,7 +41,7 @@ The placement decision rule — which layer a new rule belongs in — is owned b
 
 Steps verified against README "Editing a skill" and CLAUDE.md Environment Facts, 2026-07-08. Run every applicable step, in order:
 
-1. **Edit the canonical source** under `C:\Dev\claude-config` (editing via the `~/.claude` symlinks/junction hits the same files).
+1. **Edit the canonical source** under `<clone>` (editing via the `~/.claude` symlinks/junction hits the same files).
 2. **Structural check** — run the health/lint scripts per `claude-config-diagnostics`.
 3. **Behavioral check** — where behavior changed, produce the evidence per `claude-config-validation`.
    **Regression gate (M3, adopted 2026-07-10)** — for any change to a skill `description` or a CLAUDE.md routing row, also run the trigger-recall suite before shipping: `bash "$HOME/.claude/skills/claude-config-research/scripts/run-m1.sh" <lightweight-model-id>` (needs the `claude` CLI; set `CLAUDE=` to its path). Zero unexplained regressions against the latest experiment-log baseline; an *intentional* re-routing must be pre-registered and recorded there (pattern: entry #4). Corpus is append-only — a changed description gets a new case, never a reworded old one. Run it on each tier in the latest baseline (currently both — newest entry of `claude-config-research/references/experiment-log.md`). The gate is deliberately manual: a UserPromptSubmit reminder-hook design was tested and retired (entry #8); automating this gate itself has not been attempted.
@@ -58,7 +58,7 @@ Steps verified against README "Editing a skill" and CLAUDE.md Environment Facts,
 
 ## 5. Review discipline (single owner, git-backed)
 
-`C:\Dev\claude-config` is a single-owner personal library, **under git since 2026-07-10** (owner-authorized; private remote `github.com/SOtham/claude-config`). Git supplies history, diff review, and revert — for committed state. Because there is still no second reviewer, the three controls remain mandatory on every change, plus a fourth:
+This library (`<clone>`) is single-owner, **under git since 2026-07-10** (owner-authorized; private remote — `git remote -v` shows it). Git supplies history, diff review, and revert — for committed state. Because there is still no second reviewer, the three controls remain mandatory on every change, plus a fourth:
 
 - **Plan-first gate** (CLAUDE.md): multi-file, security-sensitive, or infrastructure changes get a written plan and explicit owner confirmation before execution; silence is not confirmation.
 - **Diagnostics before and after**: capture a clean baseline (`claude-config-diagnostics`), make the change, re-run, compare.
@@ -75,11 +75,11 @@ Steps verified against README "Editing a skill" and CLAUDE.md Environment Facts,
 
 ## Provenance and maintenance
 
-Written 2026-07-08; §5 rewritten 2026-07-10 when the repo went under git (private remote github.com/SOtham/claude-config). Counts in any snapshot drift — re-verify volatile facts before trusting them:
+Written 2026-07-08; §5 rewritten 2026-07-10 when the repo went under git (private remote). Counts in any snapshot drift — re-verify volatile facts before trusting them:
 
 - Sync invocation still verbatim in both doctrine files (PowerShell, tested): `Select-String -Path "$HOME\.claude\CLAUDE.md","$HOME\.claude\README.md" -Pattern 'sync\.ps1"'`
 - CLAUDE.md budget and current usage (PowerShell, tested): `(Get-Content "$HOME\.claude\CLAUDE.md").Count` — budget line: `Get-Content "$HOME\.claude\CLAUDE.md" -TotalCount 9`
 - Deny-rule inventory (PowerShell, tested): `(Get-Content "$HOME\.claude\settings.json" -Raw | ConvertFrom-Json).permissions.deny`
-- Git status (PowerShell or bash, tested): `git -C C:\Dev\claude-config rev-parse --is-inside-work-tree` — expect `true` since 2026-07-10; remote: `git -C C:\Dev\claude-config remote -v`
-- Ship steps 1/4/5/6 wording: "Editing a skill" section of `C:\Dev\claude-config\README.md`; forward-slash zip invariant: header comment of `C:\Dev\claude-config\sync.ps1`
+- Git status (PowerShell or bash, tested): `git -C <clone> rev-parse --is-inside-work-tree` — expect `true` since 2026-07-10; remote: `git -C <clone> remote -v`
+- Ship steps 1/4/5/6 wording: "Editing a skill" section of `<clone>\README.md`; forward-slash zip invariant: header comment of `<clone>\sync.ps1`
 - ≤200-char description limit and other upload constraints: `claude-config-platform-reference`
