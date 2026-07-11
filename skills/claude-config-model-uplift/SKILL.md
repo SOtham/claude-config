@@ -86,7 +86,7 @@ Work top-down; stop at the cheapest lever that closes the gap.
 | 2 | Session scaffold — the Phase 1 paste | One paste per session | **trialed, supported n=3** (entries #7, #9) — the strongest measured lever |
 | 3 | Explicit skill invocation in the task prompt (e.g. "/root-cause") | Near zero per task | candidate |
 | 4 | Orchestrated split: strong plans/reviews, cheap executes (Phase 3) | Highest setup: task contracts + review loop (`orchestrate`) | candidate |
-| 5 | Hook-based enforcement, e.g. a hook injecting scaffold reminders as context | `settings.json` change — the highest change gate (`claude-config-change-control`) | **retired as designed** (entry #8, 2026-07-10): a `UserPromptSubmit` reminder hook fired in headless but changed nothing (2/3 = baseline), and does NOT fire for subagent task prompts at all. A `SessionStart`-scoped variant remains untested. Do not rebuild without a new pre-registered experiment |
+| 5 | Injection-based enforcement: hooks or `--append-system-prompt` | `settings.json` / CLI flags | **retired, twice-tested** (entries #8 + #12): UserPromptSubmit AND SessionStart both fail to fire for subagent sessions; in headless, an injected context reminder changed nothing and a system-prompt scaffold (delivery verified) scored 0/3 vs the 2/3 baseline. Mechanism (entry #12): loading keys off USER-MESSAGE content only — injection anywhere else does not work. Do not rebuild without a new pre-registered experiment. Sole untested variant: an agent *definition* embedding the scaffold (predicts poorly per #12) |
 
 ## Fenced wrong paths
 
