@@ -6,12 +6,25 @@
 # limit); SKILL.md over 160 lines is a warning, not a failure. Also detects
 # duplicate frontmatter names across folders.
 #
+# Body checks (added 2026-07-18): scripts/ or references/ files named in the
+# body must exist in the skill folder (FAIL); description should carry a
+# 'Use when' clause (WARN); backticked kebab-case tokens that look like skill
+# references must resolve to an existing skills\<name> folder or the allowlist
+# (WARN - catches rename/retire rot).
+#
+# -SkillsDir <path>: lint that directory instead of the repo's skills\ (used by
+# tests\selftest-lint.tests.sh to point the linter at a synthetic fixture tree).
+#
 # Robust to half-written skills (empty files, missing/unclosed frontmatter):
 # each such state is a reported finding, never a crash.
 #
 # READ-ONLY GUARANTEE: zero writes anywhere; output to stdout only.
 # Exit codes: 0 = all skills pass (warnings allowed), 1 = at least one FAIL.
 # Windows PowerShell 5.1 compatible. Works from any CWD.
+
+param(
+    [string]$SkillsDir
+)
 
 $ErrorActionPreference = 'Stop'
 
@@ -24,16 +37,30 @@ function Report {
     Write-Output ("[{0}] {1}" -f $Status, $Message)
 }
 
-# --- Derive skills dir from this script's own location -------------------------
-$skillDir  = Split-Path -Parent $PSScriptRoot
-$skillsDir = Split-Path -Parent $skillDir
-try {
-    $skillsItem = Get-Item -LiteralPath $skillsDir -Force
-    if ($skillsItem.LinkType) {
-        $target = @($skillsItem.Target) | Select-Object -First 1
-        if ($target) { $skillsDir = $target }
-    }
-} catch { }
+# --- Derive skills dir from this script's own location (unless -SkillsDir given) ---
+# NOTE: PowerShell variables are case-insensitive, so $skillsDir IS the $SkillsDir param.
+if (-not $SkillsDir) {
+    $skillDir  = Split-Path -Parent $PSScriptRoot
+    $skillsDir = Split-Path -Parent $skillDir
+    try {
+        $skillsItem = Get-Item -LiteralPath $skillsDir -Force
+        if ($skillsItem.LinkType) {
+            $target = @($skillsItem.Target) | Select-Object -First 1
+            if ($target) { $skillsDir = $target }
+        }
+    } catch { }
+}
+
+# Backticked kebab-case tokens that legitimately are NOT skill references.
+# Tune here when the sibling-reference WARN flags a false positive.
+# Seeded 2026-07-18 from the first full run: platform frontmatter field names,
+# model ids, a bundled-skill example, and test-gate's exemption categories.
+$refAllowlist = @(
+    'allowed-tools', 'argument-hint', 'disable-model-invocation',
+    'disallowed-tools', 'user-invocable',
+    'claude-haiku-4-5', 'usage-credits',
+    'config-only', 'inline-tests', 'no-infra', 'ui-glue'
+)
 
 Write-Output ("lint-skills.ps1 - linting {0}" -f $skillsDir)
 Write-Output ""
@@ -110,6 +137,42 @@ foreach ($folder in $folders) {
     } elseif ($desc.Length -gt 200) {
         Report 'FAIL' ("{0}: description is {1} chars (claude.ai limit is 200)" -f $fname, $desc.Length)
         $ok = $false
+    }
+
+    # --- Body checks (2026-07-18) ---------------------------------------------
+    $body = @()
+    if ($close + 1 -le $lines.Count - 1) { $body = $lines[($close + 1)..($lines.Count - 1)] }
+    $bodyText = ($body -join "`n")
+
+    # (a) FAIL: scripts/ or references/ files named in the body must exist in the
+    #     folder. Lookbehind excludes longer paths (<other-skill>/scripts/x.sh).
+    $fileRefs = [regex]::Matches($bodyText, '(?<![\w/.-])(scripts|references)/[A-Za-z0-9._-]+') |
+        ForEach-Object { $_.Value } | Sort-Object -Unique
+    foreach ($ref in $fileRefs) {
+        $refPath = Join-Path $folder.FullName ($ref -replace '/', '\')
+        if (-not (Test-Path -LiteralPath $refPath -PathType Leaf)) {
+            Report 'FAIL' ("{0}: body references {1} but no such file exists in the skill folder" -f $fname, $ref)
+            $ok = $false
+        }
+    }
+
+    # (b) WARN: the description recipe ends with a trigger clause ('Use when <triggers>';
+    #     house variants observed 2026-07-18: 'Use for/before', 'Run before/after').
+    #     A missing clause usually means weak auto-load triggers.
+    if ($desc -and $desc -notmatch '(Use|Run) (when|for|before|after)') {
+        Report 'WARN' ("{0}: description has no trigger clause ('Use when ...' - recipe: claude-config-skill-authoring)" -f $fname)
+    }
+
+    # (c) WARN: backticked kebab-case token that resolves to no skills\<name>
+    #     folder and is not allowlisted - likely a renamed/retired skill reference.
+    $tickTokens = [regex]::Matches($bodyText, '`([a-z0-9]+(?:-[a-z0-9]+)+)`') |
+        ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+    foreach ($tok in $tickTokens) {
+        if ($tok -eq $fname) { continue }
+        if ($refAllowlist -contains $tok) { continue }
+        if (-not (Test-Path -LiteralPath (Join-Path $skillsDir $tok) -PathType Container)) {
+            Report 'WARN' ("{0}: backticked reference '{1}' matches no skills folder (renamed/retired skill, or add to the lint allowlist)" -f $fname, $tok)
+        }
     }
 
     if ($lines.Count -gt 160) {

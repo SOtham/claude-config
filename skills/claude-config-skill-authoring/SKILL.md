@@ -91,10 +91,11 @@ $d = (Get-Content "$HOME\.claude\skills\<name>\SKILL.md" | Select-String '^descr
 4. Write the description per Section 4; verify ≤200 chars with the counter one-liner.
 5. Write the body as a procedure a zero-context engineer or lightweight-tier session can execute without asking questions; define jargon at first use.
 6. Verify every command, path, and limit you state by running or reading it in THIS environment (Windows PowerShell 5.1 — no `&&`/`||`; label each block PowerShell or bash). Label anything unverified.
-7. One home per fact: if a sibling skill owns a fact, write one line plus "see `<sibling>`" — never a second full copy.
-8. Cut every line that would not change a lightweight-tier session's behavior. Shorter skills are followed better (house doctrine per the CLAUDE.md maintainer comment; Assumption — still unmeasured: the achieved M1/M2 tested trigger recall, not body adherence).
-9. Ship it through `claude-config-change-control` — change classification, gates, and the sync/re-upload protocol live there.
-10. Prove it triggers per `claude-config-validation` — trigger tests and adherence spot-checks live there.
+7. Skill ships `scripts\`? Add a fixture-based suite at `<clone>\tests\<name>.tests.sh` (repo `tests\` sits outside `skills\` so it never ships in the zip; `tests\run-all.sh` picks it up by name) and run it green before shipping — details in `claude-config-diagnostics`.
+8. One home per fact: if a sibling skill owns a fact, write one line plus "see `<sibling>`" — never a second full copy.
+9. Cut every line that would not change a lightweight-tier session's behavior. Shorter skills are followed better (house doctrine per the CLAUDE.md maintainer comment; Assumption — still unmeasured: the achieved M1/M2 tested trigger recall, not body adherence).
+10. Ship it through `claude-config-change-control` — change classification, gates, and the sync/re-upload protocol live there.
+11. Prove it triggers per `claude-config-validation` — trigger tests and adherence spot-checks live there.
 
 ## When NOT to use this skill
 

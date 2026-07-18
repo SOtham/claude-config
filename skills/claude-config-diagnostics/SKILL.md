@@ -29,12 +29,14 @@ powershell -ExecutionPolicy Bypass -File "$HOME\.claude\skills\claude-config-dia
 | Script | Checks | Notes |
 | --- | --- | --- |
 | `doctor.ps1` | Repo top-level files present; each expected `~/.claude` entry has the right link type (5 SymbolicLinks + `skills` Junction) and target — a real file/dir instead is a **WARN**, not FAIL, since 2026-07-10 (legitimate on an `install.ps1 -Mode Copy` install; suspicious on a link-mode one); `settings.json` parses and all 9 baseline secrets deny rules present; CLAUDE.md vs ~120-line budget (WARN only) | One-shot system health |
-| `lint-skills.ps1` | Per `skills\<dir>`: SKILL.md exists; frontmatter (the `---`-delimited YAML block) parses; `name:` = folder name; `description:` non-empty and ≤200 chars; >160 lines is a WARN; duplicate names | Tolerates half-written skills: every broken state is a reported finding, never a crash |
+| `lint-skills.ps1` | Per `skills\<dir>`: SKILL.md exists; frontmatter (the `---`-delimited YAML block) parses; `name:` = folder name; `description:` non-empty and ≤200 chars; >160 lines is a WARN; duplicate names. Body checks (2026-07-18): `scripts/`/`references/` files named in the body must exist (FAIL); missing description trigger clause and unresolvable backticked sibling-skill references are WARNs (false positives → in-script allowlist) | Tolerates half-written skills: every broken state is a reported finding, never a crash. `-SkillsDir <path>` retargets it (used by its mutation self-test) |
 | `check-dist.ps1` | Per skill: `~/.claude/dist/<name>.zip` exists and is newer than the newest file in the skill folder; orphan zips (zip without folder); WARNs if a second `dist\` exists inside the repo | A brand-new skill is EXPECTED to show `zip MISSING` until `sync.ps1` runs — as of 2026-07-08 the new `claude-config-*` skills all do |
 
 **Exit codes** (all three): `0` = healthy — WARNs allowed; `1` = at least one FAIL. Read `$LASTEXITCODE` immediately after the call. WARN never flips the exit code.
 
 Scripts travel inside the upload zip: `sync.ps1` packages each skill folder recursively (`Get-ChildItem $_.FullName -Recurse -File`), so `scripts\` ships in `claude-config-diagnostics.zip` automatically.
+
+**Deterministic test suites** (added 2026-07-18) live at `<clone>\tests\` — deliberately OUTSIDE `skills\`, so they never ship in upload zips. Run them with (bash/Git Bash) `bash <clone>/tests/run-all.sh`: per-skill script suites (`tests\<skill>.tests.sh` — e.g. test-gate's 21-case hook suite) plus tool self-tests (`tests\selftest-*.tests.sh` — e.g. the linter mutation test; a checker that cannot fail is decoration). Run whenever a change touches any skill's `scripts\` or these diagnostic scripts. Exit codes match the scripts above: 0 = every suite passed.
 
 ## 3. Interpretation guide
 

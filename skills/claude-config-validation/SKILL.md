@@ -65,7 +65,7 @@ Trial a risky new rule or skill in ONE project first — its `.claude/skills/` o
 
 - No claiming success without observed behavior. "The model said it would comply" is not evidence; neither is "the edit reads well".
 - A passed trigger test proves loading, not adherence. Claim only what the test measured.
-- Negative results get recorded, not discarded — they are the regression baseline for Section 5. Convention (candidate): keep the case list plus dated pass/fail one-liners in an `evals.md` inside the skill's own folder (it ships in the upload zip via `sync.ps1`, so keep it terse); for CLAUDE.md/settings changes, attach cases to the change record per `claude-config-change-control`. The repo is git-backed (2026-07-10), but the convention stands unchanged: if a result isn't written to a file, it never happened — commit messages are not the evidence record, the experiment log and `evals.md` files are.
+- Negative results get recorded, not discarded — they are the regression baseline for Section 5. Convention (adopted 2026-07-18): **deterministic** checks live as committed suites in `<clone>\tests\` (outside `skills\` so they never ship in upload zips; runner and conventions: `claude-config-diagnostics`); **qualitative** case lists plus dated pass/fail one-liners go in an `evals.md` inside the skill's own folder (ships in the zip via `sync.ps1`, so keep it terse); for CLAUDE.md/settings changes, attach cases to the change record per `claude-config-change-control`. If a result isn't written to a file, it never happened — commit messages are not the evidence record; the experiment log, `tests\` suites, and `evals.md` files are.
 - Date-stamp every recorded result — platform behavior drifts, and undated evidence cannot expire.
 
 ## When NOT to use this skill
@@ -84,4 +84,4 @@ Written 2026-07-08. Re-verify volatile facts before trusting them:
 - Transcript location and record shape: `Get-ChildItem "$HOME\.claude\projects"`, then `Select-String` any `.jsonl` for `"name":"Skill"` (tested 2026-07-08 — found a real `usage-credits` invocation). The Section 2 pattern assumes `"name"` and `"input"` are adjacent in the JSON; if it stops matching, fall back to `-Pattern '"name":"Skill"'` and read the matching lines.
 - New-session pickup claim: "Editing a skill" step 1 in `<clone>\README.md`; `sync.ps1` header states the same
 - Adherence observable examples: Debugging, Planning Gate, and Verification sections of `<clone>\CLAUDE.md`
-- `evals.md` convention: candidate — check any skill folder for the file to see whether it was adopted
+- Evidence-location convention: adopted 2026-07-18 — deterministic suites in `<clone>\tests\` (check the folder exists and `run-all.sh` passes); `evals.md` remains the qualitative-log home (none written yet as of adoption — check any skill folder)
