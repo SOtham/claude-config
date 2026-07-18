@@ -1,0 +1,3 @@
+# Shell scripts must stay LF: bash (Git Bash) fails on CRLF, and
+# skills ship scripts (e.g. test-gate) that repos copy and execute.
+*.sh text eol=lf
