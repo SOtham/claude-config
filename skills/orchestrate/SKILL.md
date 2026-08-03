@@ -21,6 +21,14 @@ Work inline when:
 - It's a single quick lookup or edit.
 - Steps are sequential and each depends on the previous result.
 
+Every spawn is paid for twice: the agent re-establishes context and re-explores, then you re-read its report. Current frontier tiers reach for subagents too readily — inline is the default, delegation is the exception you justify.
+
+- **Don't delegate verification or review of your own work.** Verification belongs in the main loop; a verifier subagent re-derives context to re-check what you can check directly.
+- **Don't delegate what you could finish in a handful of tool calls** — a few file reads, a handful of edits, a simple search. Spawn overhead exceeds the work.
+- **Don't split one modest job across multiple parallel agents.** Parallel agents are for genuinely independent tracks. If one agent can do it, use one.
+- **Commit to the delegation.** Once an agent reports back, don't redo its work or re-derive its findings — paying the overhead twice is the worst outcome.
+- **Keep spawn counts low.** Default ceiling: 3 agents running at once; raise it only when the user asks. Measured here: heavy parallel subagents start hitting session rate limits around 3-4 concurrent.
+
 ## The task contract
 
 A subagent knows nothing you don't tell it. Every delegation prompt needs:
@@ -42,7 +50,7 @@ A subagent knows nothing you don't tell it. Every delegation prompt needs:
 
 - Pilot one item first; fix the prompt before launching the fleet.
 - Make items truly independent — shared files mean merge conflicts.
-- Cap concurrency sensibly and make each item idempotent so a failed item can be re-run alone.
+- Hold concurrency to the ceiling above — run the remaining items in later waves — and make each item idempotent so a failed item can be re-run alone.
 - Verify by sampling: spot-check a few results before trusting the batch.
 
 ## Reusable agent definitions

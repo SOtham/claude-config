@@ -107,7 +107,7 @@ $d = (Get-Content "$HOME\.claude\skills\<name>\SKILL.md" | Select-String '^descr
 
 ## Provenance and maintenance
 
-Written 2026-07-07 against the repo state on that date (15 method skills, single `SKILL.md` per folder, frontmatter keys `name` + `description` only). Re-verify volatile facts before trusting them:
+Written 2026-07-07 against the repo state on that date (15 method skills, single `SKILL.md` per folder, frontmatter keys `name` + `description` only). Inventory as of 2026-08-03: 27 folders — 17 method skills + 10 `claude-config-*` meta skills; structure and frontmatter keys unchanged. Re-verify volatile facts before trusting them:
 
 - Skill inventory and line counts (PowerShell, tested): `Get-ChildItem "$HOME\.claude\skills" -Directory | ForEach-Object { "{0}: {1} lines" -f $_.Name, (Get-Content (Join-Path $_.FullName 'SKILL.md')).Count }`
 - Folder→zip naming coupling: read the header and `$name` lines of `<clone>\sync.ps1`

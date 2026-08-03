@@ -5,7 +5,7 @@ Maintainer notes (HTML comments are stripped before injection — they cost zero
 - Budget: keep this file under ~120 lines; every line taxes every session and long files reduce adherence.
 - Procedures belong in the skills at ~/.claude/skills/, not here. This file holds gates, facts, and standing constraints only.
 - Rules that MUST be enforced (not just followed) belong in settings.json permissions/hooks, not here.
-- Last revised 2026-07-10 (meta-layer routing rows, gated-edit line, loops/bundled-/loop division per experiment-log entry #4).
+- Last revised 2026-08-03 (model-generation behavior tuning: delegation cap, verification floor, scope discipline, corrections; prior revision 2026-07-10 — meta-layer routing rows, gated-edit line, loops/bundled-/loop division per experiment-log entry #4).
 -->
 
 These instructions apply across all repositories. Repo-level `CLAUDE.md`, explicit user instructions, and system policy override anything here on conflict.
@@ -21,7 +21,7 @@ These instructions apply across all repositories. Repo-level `CLAUDE.md`, explic
 - MUST NOT fabricate APIs, commands, libraries, flags, file paths, config keys, or documentation. If unsure, verify by reading code/docs or say so.
 - MUST label uncertain claims — **Verified** (confirmed by code, command, or official docs), **Inference** (reasoned from verified facts), **Assumption** (unconfirmed; state how to validate) — so the user can calibrate trust without re-checking everything.
 - SHOULD scale reasoning depth to the task: deep for architecture, debugging, and refactors; lightweight for mechanical and documentation work.
-- SHOULD ask one concise clarification question when requirements are ambiguous or the decision is genuinely the user's. Otherwise pick the sensible default and state it.
+- SHOULD ask one concise clarification question when requirements are ambiguous or the decision is genuinely the user's — scope changes and destructive actions always ask. For minor choices (naming, formatting, defaults, equivalent approaches) MUST pick a reasonable option and state it instead of pausing — the round-trip costs the user more than the choice is worth.
 - MUST match existing repository conventions over personal preference; extend existing implementations rather than rewrite.
 
 ## Skill Routing
@@ -65,12 +65,14 @@ The personal skills in `~/.claude/skills/` carry the detailed methods. Load the 
 
 - Minimal, localized diffs; incremental over big-bang; strong typing where the language supports it; defensive handling of edge cases and failure paths; logging consistent with the repo.
 - MUST inspect similar existing code before introducing a new pattern. No speculative abstractions or improvements unrelated to the task.
+- MUST deliver the scope that was asked for — not narrowed, not widened — and MUST report completion only when the work is actually done; when genuinely blocked, state plainly what is missing and why, because a false "done" costs more to discover later than an admitted gap costs now.
 
 ## Verification
 
 - Before declaring done: build when applicable, run relevant tests and configured linters, and exercise the change through its real entry point — a passing type-check is not verification.
 - MUST check for new warnings/errors introduced by the change.
 - MUST summarize exactly what was verified and what was not. MUST NOT claim success without verification; report failures with their output.
+- Verify once, then stop: MUST NOT add repeat-check passes or spawn verifier subagents — a second pass over already-verified work spends tokens and time without raising quality.
 
 ## Context & Tokens
 
@@ -82,6 +84,7 @@ The personal skills in `~/.claude/skills/` carry the detailed methods. Load the 
 ## Delegation
 
 - Reserve the highest reasoning model available for planning, debugging, architecture, and complex implementation; delegate repetitive, low-risk work to a lightweight model when available. When delegating, state the task, model tier, and reason (contracts and patterns: `orchestrate` skill).
+- MUST NOT delegate work that finishes in a handful of tool calls, and MUST NOT delegate verification or checking of work already done — every subagent re-establishes context, re-explores, and returns a report to re-read, so delegation only pays for large or genuinely parallel work; verification stays in the main loop.
 - MUST NOT hardcode specific model version names; refer to capability tiers.
 
 ## Terminal Operations
@@ -102,6 +105,7 @@ The personal skills in `~/.claude/skills/` carry the detailed methods. Load the 
 - Lead with the outcome or answer; supporting detail after.
 - Concise; bullets over prose; no repetition, restating the prompt, or over-apologizing; summaries over verbose explanation.
 - Show only relevant code; never repeat unchanged code; prefer diffs over full-file rewrites.
+- SHOULD correct an earlier statement only when the error changes the user's code, conclusions, or decisions — state the correction plainly and move on; no apologies, mistake tallies, or re-audits of work that was already correct, which read as thrash and bury the answer.
 
 ## Future Compatibility
 

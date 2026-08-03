@@ -84,7 +84,7 @@ User-level `~/.claude/` never carries over to Claude Code web sessions. Routes t
 
 | Piece | Drop into another repo (`.claude/skills/`) | Drop into another installation |
 | --- | --- | --- |
-| 15 method skills | ✅ copy folders as-is — zero personal paths (audited 2026-07-10) | ✅ via clone + install.ps1 |
+| 17 method skills | ✅ copy folders as-is — zero personal paths (audited 2026-07-10) | ✅ via clone + install.ps1 |
 | 10 `claude-config-*` meta skills | ❌ they describe THIS library — meaningless elsewhere | ✅ they travel with the clone |
 | CLAUDE-SNIPPET.md | ✅ paste into the repo's CLAUDE.md (rules for web/teammates) | n/a |
 | CLAUDE.md / settings.json | ❌ personal — repos get the snippet instead | ✅ linked by install.ps1; review `model` key |

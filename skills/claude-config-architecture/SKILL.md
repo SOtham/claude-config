@@ -39,7 +39,7 @@ A *symlink* is a file-level link the OS resolves transparently; a *junction* is 
 | Layer | Contract | Why this layer exists |
 | --- | --- | --- |
 | `settings.json` | Machine-ENFORCED: permission `deny` rules and hooks execute in the harness | Some rules (secrets protection, session-start checks) must hold even when a model ignores prose. Enforcement cannot depend on model obedience. |
-| `CLAUDE.md` | Always loaded, every session; gates and facts only; budget **~120 lines** | Its own maintainer comment states the doctrine: "every line taxes every session and long files reduce adherence." Currently 104 lines (verified 2026-07-08). |
+| `CLAUDE.md` | Always loaded, every session; gates and facts only; budget **~120 lines** | Its own maintainer comment states the doctrine: "every line taxes every session and long files reduce adherence." Currently 112 lines (verified 2026-08-03). |
 | `skills/` | On-demand procedures; only the ≤200-char `description` is always visible; the body loads when triggered or invoked as `/<name>` | Procedures are long. Loading them only when relevant keeps the permanent tax near zero and the guidance detailed. |
 
 **Decision rule — ask in order when placing a new rule:**
@@ -80,7 +80,7 @@ Automated checks for these live in `claude-config-diagnostics`; the list here is
 | Weak point | Why it matters | Status | Addressed by |
 | --- | --- | --- | --- |
 | **Version control** — was the top weak point; **closed 2026-07-10**: git repo with a private remote (owner-authorized; `git remote -v` shows it) | History, diff review, and revert now exist — for committed state only | closed | Residual: single owner, no PR review — `claude-config-change-control` gates stay mandatory, and every shipped change must be committed (uncommitted edits remain unprotected) |
-| **Manual zip re-upload to claude.ai** | Web sessions run stale skills whenever an upload is skipped. Observed 2026-07-09: 25 skill folders vs 15 `dist\` zips — re-check with the drift one-liner in Provenance | open | Post-change protocol: `claude-config-change-control`; staleness check: `claude-config-diagnostics` |
+| **Manual zip re-upload to claude.ai** | Web sessions run stale skills whenever an upload is skipped. Observed 2026-07-09: 25 skill folders vs 15 `dist\` zips. That count gap has since closed (2026-08-03: 27 folders, 27 zips), but `dist\` parity only proves `sync.ps1` ran — the claude.ai side is not observable from disk, so this stays open — re-check with the drift one-liner in Provenance | open | Post-change protocol: `claude-config-change-control`; staleness check: `claude-config-diagnostics` |
 | **Adherence measurement incomplete** | Trigger-recall is now harnessed and gated (M1–M3, entries #3–#5) — description changes ship on measurement; *adherence* beyond loading (does the session follow the loaded method?) still rests on manual n=3 field A/Bs (entries #7/#9) | partially closed 2026-07-10 | Research program: `claude-config-research`; manual protocols: `claude-config-validation` |
 | **Single-machine setup** | Links are absolute paths on one Windows 11 machine; committed content now survives disk loss via the private remote, links and uncommitted work do not | mitigated 2026-07-10 | Rebuild runbook: `claude-config-distribution` — clone the remote, recreate the links |
 
@@ -99,7 +99,7 @@ Owner statement (2026-07-07): this library exists to transfer top-tier ("Fable-c
 
 ## Provenance and maintenance
 
-Written 2026-07-08; inventory re-verified 2026-07-09: 25 skill folders, 15 zips in `~/.claude\dist`, CLAUDE.md at 104 lines. Counts drift — re-run the one-liners below rather than trusting any snapshot. All commands are PowerShell, tested:
+Written 2026-07-08; inventory re-verified 2026-08-03: 27 skill folders (10 `claude-config-*` + 17 method), 27 zips in `~/.claude\dist`, CLAUDE.md at 112 lines. Counts drift — re-run the one-liners below rather than trusting any snapshot. All commands are PowerShell, tested:
 
 - Links resolve to canonical source: `Get-ChildItem $HOME\.claude | Where-Object { $_.LinkType } | ForEach-Object { "{0} [{1}] -> {2}" -f $_.Name, $_.LinkType, ($_.Target -join ',') }`
 - Git state (expect `True` since 2026-07-10; remote check: `git -C <clone> remote -v` → the private remote): `Test-Path <clone>\.git`
