@@ -49,6 +49,8 @@ The fixed corpus for measuring whether each skill's `description` fires on reali
 | 34 | should-load | "My autonomous watch loop never stops and keeps double-posting the same comment — what discipline is it missing?" | loops | stop condition, idempotent body (appended 2026-07-09 for the arm-B `loops` description, entry #4) |
 | 35 | should-load | "I want every code change in this repo to be forced to come with unit tests - set that up" | test-gate | installing the gate (appended 2026-07-18 for the new test-gate skill) |
 | 36 | discrimination | "Can this change ship without tests, or does it qualify for an exemption?" | test-gate (not test-craft) | policy/exemption decision, not test-writing method (appended 2026-07-18) |
+| 37 | should-load | "Write acceptance criteria for the refund endpoint before we build it" | spec-craft | stating the what testably; names neither the skill nor "spec" (appended 2026-08-03 for the new spec-craft skill) |
+| 38 | should-load | "The spec is out of date — does the code still match what it says?" | spec-craft | drift half of the merged skill; the arbiter's pre-registered risk probe (appended 2026-08-03) |
 
 ## Out of scope
 

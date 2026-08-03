@@ -38,7 +38,7 @@ Maintained source is a **git clone of this repo** (kept on a private remote — 
 Two layers. **Method skills** (generic, no prefix) apply in any repo. **Meta skills** (`claude-config-*`) maintain this config library itself.
 
 **Core method**: writing-code, architect, token-economy, prompt-craft, orchestrate, loops
-**Workflow** (from community research 2026-07): brainstorm, test-craft, root-cause, shipping, refactor-safely, handoff, recon, doc-craft
+**Workflow** (from community research 2026-07): brainstorm, spec-craft, test-craft, test-gate, root-cause, shipping, refactor-safely, handoff, recon, doc-craft
 **Setup**: repo-setup (checklist for adding the needed Claude files to a repository)
 **Meta** — maintaining this library (added 2026-07): claude-config-architecture (design contract), claude-config-change-control (change gates), claude-config-skill-authoring, claude-config-platform-reference, claude-config-distribution, claude-config-debugging, claude-config-diagnostics (health scripts), claude-config-validation, claude-config-model-uplift (run cheaper models at standard), claude-config-research (eval-harness frontier). Start at `claude-config-change-control` for any change here.
 

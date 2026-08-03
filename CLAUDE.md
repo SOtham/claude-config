@@ -31,6 +31,7 @@ The personal skills in `~/.claude/skills/` carry the detailed methods. Load the 
 | Situation | Skill |
 | --- | --- |
 | Vague or greenfield request | `brainstorm` |
+| Requirements, acceptance criteria, or code that no longer matches its spec | `spec-craft` |
 | Architecture, migration, API, security, or 3+ files | `architect` (gate below) |
 | Writing or changing code | `writing-code` |
 | Writing tests or doing TDD | `test-craft` |
