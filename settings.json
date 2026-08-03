@@ -1,7 +1,4 @@
 {
-  "autoUpdatesChannel": "latest",
-  "model": "claude-fable-5[1m]",
-  "effortLevel": "xhigh",
   "permissions": {
     "deny": [
       "Read(**/.env)",
@@ -15,6 +12,7 @@
       "Read(~/.claude/.credentials.json)"
     ]
   },
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -27,5 +25,7 @@
         ]
       }
     ]
-  }
+  },
+  "effortLevel": "xhigh",
+  "autoUpdatesChannel": "latest"
 }
