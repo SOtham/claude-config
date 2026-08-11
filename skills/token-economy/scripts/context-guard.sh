@@ -73,14 +73,29 @@ case "$tool" in
     printf '%s' "$cmd" | grep -Eq '\|[[:space:]]*(head|tail)\b' && exit 0
 
     # Deliberately tiny, high-confidence set: each has an obvious bounded form.
-    if printf '%s' "$cmd" | grep -Eq '(^|[;&|[:space:]])git[[:space:]]+log\b' \
+    #
+    # All three anchor at COMMAND POSITION - start of line, or just after ; & | (
+    # - never after a bare space. A keyword sitting mid-line is almost always
+    # prose or data (echo text, a commit message, a grep pattern), not an
+    # invocation: 'echo "use find carefully"' must stay silent. grep works
+    # line-by-line, so each line of a multi-line command anchors on its own ^.
+    # The bias is deliberately conservative - a missed warning costs one command,
+    # a false one trains the reader to ignore every warning.
+    if printf '%s' "$cmd" | grep -Eq '(^|[;&|()])[[:space:]]*git[[:space:]]+log\b' \
        && ! printf '%s' "$cmd" | grep -Eq '(-n[[:space:]]*[0-9]|--max-count|-[0-9]+)'; then
       emit "context-guard: 'git log' without a count limit can return unbounded output. Add -n (e.g. git log -n 20) unless you truly need full history."
     fi
 
-    if printf '%s' "$cmd" | grep -Eq '(^|[;&|[:space:]])find\b' \
+    if printf '%s' "$cmd" | grep -Eq '(^|[;&|()])[[:space:]]*find\b' \
        && ! printf '%s' "$cmd" | grep -q -- '-maxdepth'; then
       emit "context-guard: 'find' without -maxdepth can walk an entire tree and flood context. Scope it with -maxdepth, or use the Glob tool instead."
+    fi
+
+    # The recursive flag must belong to THIS ls, not a later command in the same
+    # line: [^;&|]* cannot cross a separator, so 'ls foo && grep -R bar' is silent.
+    # Case matters - ls -r is reverse-sort, only -R recurses.
+    if printf '%s' "$cmd" | grep -Eq '(^|[;&|()])[[:space:]]*ls[[:space:]]+[^;&|]*(-[a-zA-Z]*R|--recursive)'; then
+      emit "context-guard: 'ls -R' walks the whole tree and can flood context. Use the Glob tool for file discovery, or bound it with find -maxdepth."
     fi
     ;;
 esac

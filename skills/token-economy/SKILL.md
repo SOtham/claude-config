@@ -70,7 +70,7 @@ Nor is the always-loaded config worth trimming for cost: in the measured window,
 `scripts/context-guard.sh` is a `PreToolUse` hook registered in this library's `settings.json` for `Read` and `Bash`. The rules above are prose a session can fail to follow; the audit showed that happening at scale, so this is the enforced layer's version of the same rule.
 
 - **Advisory only** — it emits `additionalContext` and never a `permissionDecision`, so it warns and gets out of the way. It cannot block a call.
-- **Fires on**: an unscoped `Read` of a file over ~40KB (tune with `CLAUDE_CONTEXT_GUARD_BYTES`), `git log` with no count limit, `find` with no `-maxdepth`.
+- **Fires on**: an unscoped `Read` of a file over ~40KB (tune with `CLAUDE_CONTEXT_GUARD_BYTES`), `git log` with no count limit, `find` with no `-maxdepth`, and `ls -R`/`--recursive`.
 - **Stays silent on**: reads that already pass `offset`/`limit`, commands already piped to `head`/`tail`, and anything it cannot parse — it fails open by design, since a spurious warning on every tool call is worse than a missed one.
 - **Known gap**: `cat`-ing a large file through Bash bypasses the size check, because resolving a path out of an arbitrary shell command is not reliable enough to warn on. Prefer the Read tool, which is guarded.
 

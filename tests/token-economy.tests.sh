@@ -85,6 +85,48 @@ o=$(run "$(bs 'echo findings; echo git logic')")
 o=$(run "$(bs 'npm test')")
 [ -z "$o" ] && ck ok "T20 ordinary command stays silent" || ck no "T20 ordinary command stays silent" "$o"
 
+# --- ls -R: recursion must be attributed to ls, and only to capital R ---------
+o=$(run "$(bs 'ls -R')")
+case "$o" in *additionalContext*Glob*) ck ok "T28 ls -R warns";; *) ck no "T28 ls -R warns" "${o:-SILENT}";; esac
+o=$(run "$(bs 'ls -lR src')")
+case "$o" in *additionalContext*) ck ok "T29 clustered -lR warns";; *) ck no "T29 clustered -lR warns" "${o:-SILENT}";; esac
+o=$(run "$(bs 'ls --recursive src')")
+case "$o" in *additionalContext*) ck ok "T30 --recursive warns";; *) ck no "T30 --recursive warns" "${o:-SILENT}";; esac
+o=$(run "$(bs 'ls -r')")
+[ -z "$o" ] && ck ok "T31 lowercase -r (reverse) stays silent" || ck no "T31 lowercase -r (reverse) stays silent" "$o"
+o=$(run "$(bs 'ls -la')")
+[ -z "$o" ] && ck ok "T32 ls -la stays silent" || ck no "T32 ls -la stays silent" "$o"
+o=$(run "$(bs 'ls')")
+[ -z "$o" ] && ck ok "T33 bare ls stays silent" || ck no "T33 bare ls stays silent" "$o"
+o=$(run "$(bs 'ls src && grep -R needle .')")
+[ -z "$o" ] && ck ok "T34 later -R not attributed to ls" || ck no "T34 later -R not attributed to ls" "$o"
+o=$(run "$(bs 'ls -R | head -20')")
+[ -z "$o" ] && ck ok "T35 ls -R piped to head stays silent" || ck no "T35 ls -R piped to head stays silent" "$o"
+o=$(run "$(bs 'tools -R build')")
+[ -z "$o" ] && ck ok "T36 ls inside another word ignored" || ck no "T36 ls inside another word ignored" "$o"
+
+# --- command position: a keyword in prose or data is not an invocation --------
+# Regression for the false positive found in the wild 2026-08-11: a commit
+# message containing "unbounded recursive find/ls -R" tripped the find guard.
+o=$(run "$(bs 'echo "use find carefully"')")
+[ -z "$o" ] && ck ok "T37 find inside a quoted string stays silent" || ck no "T37 find inside a quoted string stays silent" "$o"
+o=$(run "$(bs 'echo "remember to run git log first"')")
+[ -z "$o" ] && ck ok "T38 git log inside a quoted string stays silent" || ck no "T38 git log inside a quoted string stays silent" "$o"
+o=$(run "$(bs 'echo "ls -R floods context"')")
+[ -z "$o" ] && ck ok "T39 ls -R inside a quoted string stays silent" || ck no "T39 ls -R inside a quoted string stays silent" "$o"
+o=$(run "$(bs 'git commit -m "plan named unbounded recursive find/ls -R here"')")
+[ -z "$o" ] && ck ok "T40 keyword in a commit message stays silent" || ck no "T40 keyword in a commit message stays silent" "$o"
+o=$(run "$(bs 'grep -n "git log" notes.md')")
+[ -z "$o" ] && ck ok "T41 keyword as a grep pattern stays silent" || ck no "T41 keyword as a grep pattern stays silent" "$o"
+
+# ...but real invocations at command position must still fire.
+o=$(run "$(bs 'cd /tmp && find . -name x')")
+case "$o" in *additionalContext*maxdepth*) ck ok "T42 find after && still warns";; *) ck no "T42 find after && still warns" "${o:-SILENT}";; esac
+o=$(run "$(bs 'cat f; git log --oneline')")
+case "$o" in *additionalContext*git*) ck ok "T43 git log after ; still warns";; *) ck no "T43 git log after ; still warns" "${o:-SILENT}";; esac
+o=$(run "$(bs 'echo $(find . -type f)')")
+case "$o" in *additionalContext*maxdepth*) ck ok "T44 find in command substitution warns";; *) ck no "T44 find in command substitution warns" "${o:-SILENT}";; esac
+
 # --- contract: advisory only, never blocking, always exit 0 -------------------
 o=$(run "$(rd "$BIG")")
 case "$o" in *permissionDecision*) ck no "T21 never emits permissionDecision" "$o";; *) ck ok "T21 never emits permissionDecision";; esac
