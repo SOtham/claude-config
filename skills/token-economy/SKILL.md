@@ -18,9 +18,10 @@ Never run unscoped commands that can return unbounded output (recursive listings
 
 ## Reading files
 
-- Large file, known region → read with offset/limit, not the whole file.
-- Do not re-read files you just wrote or edited; the edit result already confirms state. Re-read only if an external tool (formatter, linter, generator) changed them.
+- Large file, known region → read with offset/limit, not the whole file. A 68KB source file is ~17K tokens — read it whole three times and that one file has cost 51K.
+- Do not re-read files you just wrote or edited; the edit result already confirms state. Re-read only if an external tool (formatter, linter, generator) changed them. Read-then-edit-then-read on one file is the most common form of this waste — measured at 8 reads plus 8 edits of a single small note file in one session.
 - Do not paste long file contents into replies; reference paths and line numbers.
+- **Normalize paths to one spelling per file, and reuse it.** `C:\Dev\x`, `C:\dev\x`, and `/c/dev/x` are the same file but different strings — they defeat your own recall of "I already read this" and any dedup that depends on matching. Measured: one 17K-token controller read three times under three spellings. Pick the form the repo/tool already uses and keep it byte-identical all session.
 
 ## Delegation as context isolation
 
@@ -32,15 +33,49 @@ Rule: delegate when (tokens to explore) is much greater than (tokens of the answ
 
 - Batch independent tool calls into one round instead of issuing them serially.
 - Reference earlier conclusions instead of re-deriving them.
-- Long outputs you may need later → write to a scratch file and read back selectively.
+- **Run an identical command once and keep the result.** Re-issuing the same call re-pays for its whole output. Capture values that don't change within a session (auth tokens, config lookups, build IDs) into a variable or scratch file and reuse them. Measured: the same access-token fetch 10 times and the same test command 9 times in one session.
+- **Do not re-poll a surface that has not changed.** Act, then observe once — not observe, observe, observe. Measured: 39 identical console reads and 21 identical page-text reads in a single browser session.
+- Long outputs you may need later → write to a scratch file and read back selectively. Append or write once; rewriting the same scratch file every few turns (measured: 17 times) just re-pays for it.
 - Near compaction, write a short state note (current goal, done, next step, open questions) to a file so continuation is cheap and lossless.
+- If the task has outgrown the session — a second repo, a third ticket, a second day — stop and split it (CLAUDE.md, Context & Tokens). No amount of in-session trimming beats not carrying 1,500 turns of prefix.
 
 ## Prompt-cache awareness
 
-- Provider prompt caches are prefix-based with short TTLs (~5 minutes). Rapid successive turns are cheap; a pause past the TTL re-reads the whole conversation at full cost.
+Caches are prefix-based: a stable prefix is written once, then re-read on every later turn. Two TTLs exist and the session decides which it runs on — **5 minutes** (cache write ≈1.25× input price) or **1 hour** (≈2× input). Cache *reads* are ≈0.1× input under both. Verify which applies before pacing around it; do not assume the short one.
+
 - Keep stable content (instructions, references) early in prompts; volatile content late.
-- When pacing polls or wakeups: either stay comfortably inside the cache window (≤ ~4.5 min) or sleep long enough (20+ min) that the cache-miss cost is amortized. The worst choice is just past the TTL.
+- On a 1-hour TTL, pacing wakeups to beat a 5-minute window is wasted effort — the context is still cached an hour later. Match the delay to what you are actually waiting for.
+- Scheduling extra turns purely to keep a cache warm is never worth it: the re-read is billed every time.
+
+## Where the money actually goes
+
+Measured over a real 11-day window (see the audit note below), by cost component:
+
+| Component | Share | What drives it | The lever |
+| --- | --- | --- | --- |
+| Cache read | 54% | Turn count × context size in **one long session** | Split the session (CLAUDE.md scope rule) |
+| Cache write | 36% | **Cold-starting** subagents/workflows — each pays for its own prefix | Fewer, warmer agents; pass findings in (`orchestrate`) |
+| Output | 10% | Generated text | Rarely the problem — don't optimize here first |
+
+Diagnose before economizing: a long solo session and a wide fan-out fail in opposite directions, and the fix for one does nothing for the other. Cache *hit rate* is a poor signal — the measured window sat at 89–99% while still being dominated by cache-read volume.
 
 ## What NOT to economize
 
 Correctness always outranks token savings. Never skip reading the code you are about to change, never guess file contents, and never trim a verification step to save tokens.
+
+Nor is the always-loaded config worth trimming for cost: in the measured window, CLAUDE.md plus every skill description came to ~4,100 tokens, about **1.8% of spend**. Skill bodies load only when triggered. Session structure is where the money is — cut turns and cold starts, not doctrine.
+
+## The context guard (enforced backstop)
+
+`scripts/context-guard.sh` is a `PreToolUse` hook registered in this library's `settings.json` for `Read` and `Bash`. The rules above are prose a session can fail to follow; the audit showed that happening at scale, so this is the enforced layer's version of the same rule.
+
+- **Advisory only** — it emits `additionalContext` and never a `permissionDecision`, so it warns and gets out of the way. It cannot block a call.
+- **Fires on**: an unscoped `Read` of a file over ~40KB (tune with `CLAUDE_CONTEXT_GUARD_BYTES`), `git log` with no count limit, `find` with no `-maxdepth`.
+- **Stays silent on**: reads that already pass `offset`/`limit`, commands already piped to `head`/`tail`, and anything it cannot parse — it fails open by design, since a spurious warning on every tool call is worse than a missed one.
+- **Known gap**: `cat`-ing a large file through Bash bypasses the size check, because resolving a path out of an arbitrary shell command is not reliable enough to warn on. Prefer the Read tool, which is guarded.
+
+If a warning fires and you genuinely need the whole file, read it — the guard exists to make the cost visible, not to overrule judgment.
+
+## Provenance
+
+The percentages and measured counts here come from an audit of real session transcripts (`~/.claude/projects/**/*.jsonl`), parsed from the `usage` block the API returns on every assistant turn — not estimates. Re-run that audit to re-derive them for a new window; treat the shares as the shape of the problem, not constants.

@@ -170,6 +170,73 @@ if (Test-Path -LiteralPath $claudeMdPath -PathType Leaf) {
     }
 }
 
+# --- (e) model setting reach ----------------------------------------------------
+# Why: this library's settings.json sits at the LOWEST precedence rung (Docs:
+# managed -> CLI args -> .claude/settings.local.json -> .claude/settings.json
+# (project) -> ~/.claude/settings.json (user)). A declared model here is silently
+# overridden by any higher rung, and model choice is the largest single multiplier
+# on session cost. Motivated by an audit finding: transcripts showed 100% of a
+# window's calls on a tier the user-level settings.json never named.
+#
+# This check is STATIC: it finds declared overrides. It cannot know which model a
+# session actually used - only transcripts show that (see the audit note below).
+Write-Output ""
+Write-Output "== Check E: model setting reach =="
+$declaredModel = $null
+if ($settings -and ($settings.PSObject.Properties.Name -ccontains 'model')) {
+    $declaredModel = $settings.model
+}
+if (-not $declaredModel) {
+    Report 'INFO' 'no model key in this settings.json - Claude Code uses its own default'
+} else {
+    Report 'INFO' ("user-level settings.json declares model: {0}" -f $declaredModel)
+}
+
+# Higher-precedence files that could override the user-level model key.
+$overrideCandidates = @()
+$overrideCandidates += (Join-Path $claudeDir 'settings.local.json')
+$dir = (Get-Location).Path
+while ($dir) {
+    $overrideCandidates += (Join-Path $dir '.claude\settings.json')
+    $overrideCandidates += (Join-Path $dir '.claude\settings.local.json')
+    $parent = Split-Path -Parent $dir
+    if ($parent -eq $dir) { break }
+    $dir = $parent
+}
+
+$overridesFound = 0
+foreach ($cand in $overrideCandidates) {
+    if (-not (Test-Path -LiteralPath $cand -PathType Leaf)) { continue }
+    $candModel = $null
+    try {
+        $candJson = Get-Content -LiteralPath $cand -Raw | ConvertFrom-Json
+        if ($candJson -and ($candJson.PSObject.Properties.Name -ccontains 'model')) {
+            $candModel = $candJson.model
+        }
+    } catch {
+        Report 'WARN' ("{0} does not parse as JSON - cannot check for a model override" -f $cand)
+        continue
+    }
+    if ($candModel) {
+        $overridesFound = $overridesFound + 1
+        Report 'WARN' ("model OVERRIDDEN by higher-precedence {0}: '{1}' beats user-level '{2}'" -f $cand, $candModel, $declaredModel)
+    }
+}
+
+# Environment variables outrank settings files for the session that sets them.
+foreach ($envName in @('ANTHROPIC_MODEL', 'ANTHROPIC_SMALL_FAST_MODEL', 'CLAUDE_CODE_SUBAGENT_MODEL')) {
+    $envVal = [Environment]::GetEnvironmentVariable($envName)
+    if ($envVal) {
+        $overridesFound = $overridesFound + 1
+        Report 'WARN' ("environment variable {0}={1} overrides the settings.json model for this shell" -f $envName, $envVal)
+    }
+}
+
+if ($overridesFound -eq 0) {
+    Report 'PASS' 'no higher-precedence model override found from this working directory'
+}
+Report 'INFO' 'static check only - the in-session /model command and CLI --model also override, and leave no trace on disk. To see what a session ACTUALLY used, read the model field in ~/.claude/projects/**/*.jsonl.'
+
 # --- Summary --------------------------------------------------------------------
 Write-Output ""
 Write-Output ("doctor summary: {0} FAIL, {1} WARN" -f $script:fails, $script:warns)
