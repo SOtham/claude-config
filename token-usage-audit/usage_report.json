@@ -71,14 +71,14 @@
   }
  },
  "byProject": {
-  "C--Users-SOtham": {
+  "C--Users-USER": {
    "input": 63860,
    "output": 2526298,
    "cacheCreate": 25151577,
    "cacheRead": 749984610,
    "msgCount": 3005
   },
-  "c--Dev-Repos-IndicatorWeb": {
+  "c--Dev-Repos-AppDelta": {
    "input": 1006,
    "output": 228184,
    "cacheCreate": 1041116,
@@ -92,7 +92,7 @@
    "cacheRead": 10940834,
    "msgCount": 117
   },
-  "c--Dev-Repos-platform-sso": {
+  "c--Dev-Repos-service-alpha": {
    "input": 60,
    "output": 23297,
    "cacheCreate": 112058,
@@ -166,10 +166,10 @@
  },
  "sessions": [
   {
-   "project": "C--Users-SOtham",
+   "project": "C--Users-USER",
    "sessionId": "ce9a7e15-050a-4b94-bec8-677b86359842",
    "aiTitle": "Run repo setup skill for ADO user story projects",
-   "cwd": "C:\\Users\\SOtham",
+   "cwd": "C:\\Users\\USER",
    "gitBranch": "HEAD",
    "firstTs": "2026-08-04T11:34:55.821Z",
    "lastTs": "2026-08-06T12:59:51.923Z",
@@ -281,7 +281,7 @@
    ],
    "duplicateArgCalls": [
     [
-     "Write|{\"file_path\":\"C:\\\\Users\\\\SOtham\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\C--Users-SOtham\\\\ce9a7e15-050a-4b94-bec8-677b86359842\\",
+     "Write|{\"file_path\":\"C:\\\\Users\\\\USER\\\\AppData\\\\Local\\\\Temp\\\\1\\\\claude\\\\C--Users-USER\\\\ce9a7e15-050a-4b94-bec8-677b86359842\\",
      17
     ],
     [
@@ -289,55 +289,55 @@
      10
     ],
     [
-     "Read|C:\\dev\\Repos\\platform-api.impl-139413\\src\\Security\\Security.Context\\RESTClients\\Auth0Client.cs",
+     "Read|C:\\dev\\Repos\\service-beta.impl-TICKET-06\\src\\Security\\Security.Context\\RESTClients\\AuthClient.cs",
      9
     ],
     [
-     "Bash|cd /c/dev/Repos/platform-api.impl-139413\ndotnet test src/Transactions/Transactions.Test/Transactions.Test.csproj -c Rele",
+     "Bash|cd /c/dev/Repos/service-beta.impl-TICKET-06\ndotnet test src/ModuleA/ModuleA.Test/ModuleA.Test.csproj -c Rele",
      9
     ],
     [
-     "Read|C:\\dev\\Repos\\platform-sso.feat-129562\\Auth0Configuration\\tenant-prod\\tenant.yaml",
+     "Read|C:\\dev\\Repos\\service-alpha.feat-TICKET-02\\AuthConfiguration\\tenant-prod\\tenant.yaml",
      9
     ],
     [
-     "Read|C:\\dev\\Repos\\platform-sso.feat-129562\\closure-note.md",
+     "Read|C:\\dev\\Repos\\service-alpha.feat-TICKET-02\\closure-note.md",
      8
     ],
     [
-     "Edit|C:\\dev\\Repos\\platform-sso.feat-129562\\closure-note.md",
+     "Edit|C:\\dev\\Repos\\service-alpha.feat-TICKET-02\\closure-note.md",
      8
     ],
     [
-     "Edit|C:\\dev\\Repos\\platform-sso.feat-129562\\Auth0Configuration\\tenant-prod\\actions\\Validate Registration Input\\code.js",
+     "Edit|C:\\dev\\Repos\\service-alpha.feat-TICKET-02\\AuthConfiguration\\tenant-prod\\actions\\Sample Action\\code.js",
      7
     ]
    ],
    "largeResults": [
     {
      "tool": "Read",
-     "arg": "C:\\Dev\\Repos\\platform-web\\Backend\\Api\\PlatformApi\\Instructions\\InstructionsClient.cs",
+     "arg": "C:\\Dev\\Repos\\service-gamma\\Backend\\Api\\PlatformApi\\Records\\ServiceClient.cs",
      "chars": 69862,
      "approxTokens": 17466,
      "ts": "2026-08-05T11:49:39.579Z"
     },
     {
      "tool": "Read",
-     "arg": "C:\\dev\\Repos\\platform-api.impl-139413\\src\\Transactions\\Instructions\\Controllers\\LispInstructionsController.cs",
+     "arg": "C:\\dev\\Repos\\service-beta.impl-TICKET-06\\src\\ModuleA\\Records\\Controllers\\LargeController.cs",
      "chars": 68346,
      "approxTokens": 17087,
      "ts": "2026-08-05T12:51:22.876Z"
     },
     {
      "tool": "Read",
-     "arg": "/c/dev/Repos/platform-api.impl-139413/src/Transactions/Instructions/Controllers/LispInstructionsController.cs",
+     "arg": "/c/dev/Repos/service-beta.impl-TICKET-06/src/ModuleA/Records/Controllers/LargeController.cs",
      "chars": 68346,
      "approxTokens": 17087,
      "ts": "2026-08-05T12:51:34.334Z"
     },
     {
      "tool": "Read",
-     "arg": "/c/dev/Repos/platform-api.impl-139413/src/Transactions/Instructions/Controllers/LispInstructionsController.cs",
+     "arg": "/c/dev/Repos/service-beta.impl-TICKET-06/src/ModuleA/Records/Controllers/LargeController.cs",
      "chars": 68346,
      "approxTokens": 17087,
      "ts": "2026-08-05T12:50:05.147Z"
@@ -346,11 +346,11 @@
    "promptJumps": []
   },
   {
-   "project": "c--Dev-Repos-IndicatorWeb",
+   "project": "c--Dev-Repos-AppDelta",
    "sessionId": "c5245a13-ed9f-4a9b-a245-6ee5530f58b9",
    "aiTitle": null,
-   "cwd": "C:\\Dev\\Repos\\IndicatorWeb",
-   "gitBranch": "feat/129646-missing-security-headers",
+   "cwd": "C:\\Dev\\Repos\\AppDelta",
+   "gitBranch": "feat/TICKET-03-redacted",
    "firstTs": "2026-08-04T12:19:57.023Z",
    "lastTs": "2026-08-04T13:01:46.233Z",
    "models": [
@@ -496,11 +496,11 @@
    "promptJumps": []
   },
   {
-   "project": "c--Dev-Repos-IndicatorWeb",
+   "project": "c--Dev-Repos-AppDelta",
    "sessionId": "3e266ea6-b48b-4ae7-bf0f-554cd159b3b0",
    "aiTitle": "Continue from handoff doc",
-   "cwd": "c:\\Dev\\Repos\\IndicatorWeb",
-   "gitBranch": "feat/129646-missing-security-headers",
+   "cwd": "c:\\Dev\\Repos\\AppDelta",
+   "gitBranch": "feat/TICKET-03-redacted",
    "firstTs": "2026-08-04T10:01:20.781Z",
    "lastTs": "2026-08-04T13:03:17.119Z",
    "models": [
@@ -601,7 +601,7 @@
    ],
    "duplicateArgCalls": [
     [
-     "Edit|c:\\Dev\\Repos\\IndicatorWeb\\HANDOFF.md",
+     "Edit|c:\\Dev\\Repos\\AppDelta\\HANDOFF.md",
      6
     ]
    ],
@@ -611,7 +611,7 @@
   {
    "project": "C--Dev-Repos",
    "sessionId": "22bc9a0b-c20c-4fd4-afcb-18eec6f312f1",
-   "aiTitle": "Set up Auth0 MCP for dev and staging tenants",
+   "aiTitle": "Set up AuthProvider MCP for dev and staging tenants",
    "cwd": "C:\\Dev\\Repos",
    "gitBranch": "HEAD",
    "firstTs": "2026-08-05T09:27:00.366Z",
@@ -726,10 +726,10 @@
    "promptJumps": []
   },
   {
-   "project": "C--Users-SOtham",
+   "project": "C--Users-USER",
    "sessionId": "c414f253-b04f-457d-b564-2c43ba0de2a0",
-   "aiTitle": "Address PR comments on direct investor platform",
-   "cwd": "C:\\Users\\SOtham",
+   "aiTitle": "Address PR comments on service-epsilon",
+   "cwd": "C:\\Users\\USER",
    "gitBranch": "HEAD",
    "firstTs": "2026-08-06T11:58:26.457Z",
    "lastTs": "2026-08-06T12:06:05.955Z",
@@ -825,10 +825,10 @@
    "promptJumps": []
   },
   {
-   "project": "C--Users-SOtham",
+   "project": "C--Users-USER",
    "sessionId": "dd69e090-ce28-466c-b0da-06bf69223a25",
-   "aiTitle": "Address PR comments on platform-sso",
-   "cwd": "C:\\Users\\SOtham",
+   "aiTitle": "Address PR comments on service-alpha",
+   "cwd": "C:\\Users\\USER",
    "gitBranch": "HEAD",
    "firstTs": "2026-08-06T12:02:10.037Z",
    "lastTs": "2026-08-06T12:08:50.715Z",
@@ -906,11 +906,11 @@
    "promptJumps": []
   },
   {
-   "project": "c--Dev-Repos-platform-sso",
+   "project": "c--Dev-Repos-service-alpha",
    "sessionId": "1efec583-fc15-487b-8682-3cd00c82d25f",
    "aiTitle": "Match VS Code theme to ayu terminal scheme",
-   "cwd": "c:\\Dev\\Repos\\platform-sso",
-   "gitBranch": "feat/137982-auth0-opt-extension-client-unable-to-login",
+   "cwd": "c:\\Dev\\Repos\\service-alpha",
+   "gitBranch": "feat/TICKET-05-redacted",
    "firstTs": "2026-08-04T09:41:31.398Z",
    "lastTs": "2026-08-04T09:48:27.765Z",
    "models": [
@@ -1002,7 +1002,7 @@
    ],
    "duplicateArgCalls": [
     [
-     "Edit|C:\\Users\\SOtham\\AppData\\Roaming\\Code\\User\\settings.json",
+     "Edit|C:\\Users\\USER\\AppData\\Roaming\\Code\\User\\settings.json",
      3
     ]
    ],
@@ -1087,11 +1087,11 @@
    "promptJumps": []
   },
   {
-   "project": "c--Dev-Repos-IndicatorWeb",
+   "project": "c--Dev-Repos-AppDelta",
    "sessionId": "096635d2-2fdc-4556-babe-289e591dbefa",
    "aiTitle": "Update theme to ayu color scheme",
-   "cwd": "c:\\Dev\\Repos\\IndicatorWeb",
-   "gitBranch": "feat/129646-missing-security-headers",
+   "cwd": "c:\\Dev\\Repos\\AppDelta",
+   "gitBranch": "feat/TICKET-03-redacted",
    "firstTs": "2026-08-04T09:51:26.058Z",
    "lastTs": "2026-08-04T10:00:38.137Z",
    "models": [
@@ -1175,7 +1175,7 @@
    ],
    "duplicateArgCalls": [
     [
-     "Edit|C:\\Users\\SOtham\\AppData\\Roaming\\Code\\User\\settings.json",
+     "Edit|C:\\Users\\USER\\AppData\\Roaming\\Code\\User\\settings.json",
      4
     ]
    ],
@@ -1183,11 +1183,11 @@
    "promptJumps": []
   },
   {
-   "project": "c--Dev-Repos-IndicatorWeb",
+   "project": "c--Dev-Repos-AppDelta",
    "sessionId": "51fdef9c-267f-4d8a-baf9-6ec82c4070b8",
    "aiTitle": null,
-   "cwd": "C:\\Dev\\Repos\\IndicatorWeb",
-   "gitBranch": "feat/129646-missing-security-headers",
+   "cwd": "C:\\Dev\\Repos\\AppDelta",
+   "gitBranch": "feat/TICKET-03-redacted",
    "firstTs": "2026-08-04T12:19:57.023Z",
    "lastTs": "2026-08-04T12:20:51.249Z",
    "models": [
@@ -1289,7 +1289,7 @@
   {
    "project": "C--Dev-Repos",
    "sessionId": "5def9dda-c8e4-4e17-9f88-ce22a4d150a6",
-   "aiTitle": "Initialize Auth0 MCP server with Claude Code",
+   "aiTitle": "Initialize AuthProvider MCP server with Claude Code",
    "cwd": "C:\\Dev\\Repos",
    "gitBranch": "HEAD",
    "firstTs": "2026-08-05T09:51:05.502Z",
@@ -1371,9 +1371,9 @@
    "promptJumps": []
   },
   {
-   "project": "c--Dev-Repos-IndicatorWeb",
+   "project": "c--Dev-Repos-AppDelta",
    "sessionId": "bfe144f9-79bc-4c35-a403-5ba49b0e7505",
-   "aiTitle": "Add X-Frame-Options header to indicator app",
+   "aiTitle": "Add X-Frame-Options header to app-delta app",
    "cwd": null,
    "gitBranch": null,
    "firstTs": null,
