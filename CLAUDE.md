@@ -80,6 +80,7 @@ The personal skills in `~/.claude/skills/` carry the detailed methods. Load the 
 - MUST re-read any file that a linter, formatter, or terminal tool modified earlier in the session before editing it.
 - SHOULD reference earlier conclusions instead of repeating analysis. Detailed discipline: `token-economy` skill.
 - When context nears compaction mid-task, write a `HANDOFF.md` per the `handoff` skill before continuing.
+- MUST stop and split the session when scope escalates past its original unit of work — a second repo, a third ticket, or a second calendar day. Write `HANDOFF.md`, then continue in a fresh session per unit; keep cross-unit orchestration in a subagent, not the interactive loop. Reason: every turn re-bills the entire cached prefix, so one 1,513-turn orchestrator session cost 90% of a measured 11-day budget.
 
 ## Delegation
 

@@ -24,6 +24,8 @@ Work inline when:
 
 Every spawn is paid for twice: the agent re-establishes context and re-explores, then you re-read its report. Current frontier tiers reach for subagents too readily — inline is the default, delegation is the exception you justify.
 
+**What a cold start costs.** Each agent writes its own prompt prefix to cache before doing any work. Measured over a real 11-day window, 40 agent transcripts across 6 workflow runs put cache *writes* at **36% of total spend** — the second-largest line item after cache reads, and entirely a function of how many agents were started. Fan-out is a real tool, but price it: three agents that each do substantial work beat twelve that each re-derive the same context.
+
 - **Don't delegate verification or review of your own work.** Verification belongs in the main loop; a verifier subagent re-derives context to re-check what you can check directly.
 - **Don't delegate what you could finish in a handful of tool calls** — a few file reads, a handful of edits, a simple search. Spawn overhead exceeds the work.
 - **Don't split one modest job across multiple parallel agents.** Parallel agents are for genuinely independent tracks. If one agent can do it, use one.
@@ -39,6 +41,20 @@ A subagent knows nothing you don't tell it. Every delegation prompt needs:
 3. **Context it can't discover** — decisions already made, constraints, prior findings. Don't make it re-research settled questions.
 4. **Output contract** — the exact shape of the final message (fields, format, max length). The final message is *all you get back*; if you need file:line references, say so.
 5. **Non-goals** — "do not refactor adjacent code", "do not commit". Scope creep is the default failure mode.
+6. **What is already known** — see the discovery digest below. This is the item most often skipped, and it is the expensive one.
+
+## The discovery digest
+
+Agents in the same fan-out do not share a context. Left to themselves they each rediscover the same files, and you pay full price every time. Measured in one window: a 17K-token controller read three times, a client class nine times, a config file nine times — all within one workflow.
+
+Two halves of the fix, and both are required:
+
+- **Push down.** Before spawning, put what you already know into the prompt: exact paths that matter, the key excerpt (not the whole file), conventions already established, and paths explicitly *not* worth reading. A path with a one-line summary is a few tokens; the agent re-reading that file is thousands.
+- **Pull up.** Make the output contract include a short digest of what the agent read and concluded — files touched, findings, dead ends. Feed that digest into the next agent's prompt. Sequential stages that skip this re-explore from zero.
+
+Use one canonical path spelling everywhere in these prompts. `C:\Dev\x` and `/c/dev/x` are the same file to the filesystem and different strings to everything else, including the next agent's sense of what it already has.
+
+If a fan-out is wide enough that the digest gets unwieldy, that is the signal the work wanted fewer agents, not a bigger digest.
 
 ## Execution choices
 
