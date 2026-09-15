@@ -80,7 +80,7 @@ Automated checks for these live in `claude-config-diagnostics`; the list here is
 | Weak point | Why it matters | Status | Addressed by |
 | --- | --- | --- | --- |
 | **Version control** — was the top weak point; **closed 2026-07-10**: git repo with a private remote (owner-authorized; `git remote -v` shows it) | History, diff review, and revert now exist — for committed state only | closed | Residual: single owner, no PR review — `claude-config-change-control` gates stay mandatory, and every shipped change must be committed (uncommitted edits remain unprotected) |
-| **Manual zip re-upload to claude.ai** | Web sessions run stale skills whenever an upload is skipped. Observed 2026-07-09: 25 skill folders vs 15 `dist\` zips. That count gap has since closed (2026-08-03: 27 folders, 27 zips), but `dist\` parity only proves `sync.ps1` ran — the claude.ai side is not observable from disk, so this stays open — re-check with the drift one-liner in Provenance | open | Post-change protocol: `claude-config-change-control`; staleness check: `claude-config-diagnostics` |
+| **Manual zip re-upload to claude.ai** | Web sessions run stale skills whenever an upload is skipped. Observed 2026-07-09: 25 skill folders vs 15 `dist\` zips — a real gap that closed, then drifted again (folder/zip counts are a moving target; re-run the drift one-liner in Provenance rather than trusting any snapshot here). `dist\` parity only proves `sync.ps1` ran — the claude.ai side is not observable from disk, so this stays open | open | Post-change protocol: `claude-config-change-control`; staleness check: `claude-config-diagnostics` |
 | **Adherence measurement incomplete** | Trigger-recall is now harnessed and gated (M1–M3, entries #3–#5) — description changes ship on measurement; *adherence* beyond loading (does the session follow the loaded method?) still rests on manual n=3 field A/Bs (entries #7/#9) | partially closed 2026-07-10 | Research program: `claude-config-research`; manual protocols: `claude-config-validation` |
 | **Single-machine setup** | Links are absolute paths on one Windows 11 machine; committed content now survives disk loss via the private remote, links and uncommitted work do not | mitigated 2026-07-10 | Rebuild runbook: `claude-config-distribution` — clone the remote, recreate the links |
 
@@ -99,7 +99,7 @@ Owner statement (2026-07-07): this library exists to transfer top-tier ("Fable-c
 
 ## Provenance and maintenance
 
-Written 2026-07-08; inventory re-verified 2026-08-03: 27 skill folders (10 `claude-config-*` + 17 method), 27 zips in `~/.claude\dist`, CLAUDE.md at 112 lines. Counts drift — re-run the one-liners below rather than trusting any snapshot. All commands are PowerShell, tested:
+Written 2026-07-08. Skill-folder and zip counts drift constantly (verified: no longer 27/27 as of 2026-09-15) — don't quote a snapshot number here, re-run the one-liners below for the current count. CLAUDE.md was 112 lines as of 2026-08-03. All commands are PowerShell, tested:
 
 - Links resolve to canonical source: `Get-ChildItem $HOME\.claude | Where-Object { $_.LinkType } | ForEach-Object { "{0} [{1}] -> {2}" -f $_.Name, $_.LinkType, ($_.Target -join ',') }`
 - Git state (expect `True` since 2026-07-10; remote check: `git -C <clone> remote -v` → the private remote): `Test-Path <clone>\.git`

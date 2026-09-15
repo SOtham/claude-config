@@ -10,7 +10,7 @@ Compress everything a successor needs into one page they can act on in five minu
 ## When to write one
 
 - Context is filling up and the task isn't done.
-- Work is pausing (end of day, blocked on external input).
+- Work is pausing (end of day, blocked on external input) — a session reopened after a long gap pays a full-price cache rewrite of its entire history before it's usable again; a fresh session with a handoff is cheaper than resuming a stale one.
 - Transferring the task to another agent or person.
 - Before any risky long operation that might strand the session.
 

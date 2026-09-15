@@ -14,6 +14,7 @@ Delegate when at least one holds:
 - **Context isolation**: the task requires reading far more than the answer is worth (broad searches, log sweeps, doc digestion). The subagent burns its own context; you keep only the conclusion.
 - **True fan-out**: 3+ independent, same-shaped work items (migrate N modules, review N files) that don't need each other's results.
 - **Risk isolation**: experimental code changes that belong in a separate worktree until proven.
+- **Sustained iteration**: a tool-call loop (CLI trial-and-error, build-fix-test cycles, browser-driven UI verification) expected to run for dozens of turns. Every turn re-reads the full accumulated context from cache, so turn count is a cost multiplier even when each step is individually cheap — isolate the loop in a subagent rather than running it inline for hundreds of turns. (Measured, Sept 2026 audit: the month's two costliest sessions were 700-800 turns each, zero delegation, ~90% of cost in cache mechanics from the ballooning inline context.)
 
 Work inline when:
 

@@ -37,9 +37,10 @@ Rule: delegate when (tokens to explore) is much greater than (tokens of the answ
 
 ## Prompt-cache awareness
 
-- Provider prompt caches are prefix-based with short TTLs (~5 minutes). Rapid successive turns are cheap; a pause past the TTL re-reads the whole conversation at full cost.
+- Claude Code sessions run on a 1-hour prompt-cache TTL, not the ~5-minute default (drops to 5 min only under usage overage — don't try to track or preempt that, pace the same way regardless). A gap past the TTL forces a full-price rewrite of the *entire* accumulated context, at roughly 2x the input rate, before reads get cheap again.
 - Keep stable content (instructions, references) early in prompts; volatile content late.
-- When pacing polls or wakeups: either stay comfortably inside the cache window (≤ ~4.5 min) or sleep long enough (20+ min) that the cache-miss cost is amortized. The worst choice is just past the TTL.
+- Session cost scales with turns × accumulated-context-size, not just new tokens generated: every turn re-reads the whole prior conversation from cache. A long-running session pays that read cost once per turn even if each turn is individually small — turn count is itself a cost lever. (Measured, Sept 2026 audit: the two costliest sessions of the month — 700-800 turns each, no subagent delegation — spent ~90% of their cost on cache reads and cache-rewrites, not generation.)
+- A session resumed after a multi-hour or multi-day gap pays the full rewrite on the first turn back; write a handoff (`handoff` skill) and start fresh instead of leaving a session open across sittings.
 
 ## What NOT to economize
 

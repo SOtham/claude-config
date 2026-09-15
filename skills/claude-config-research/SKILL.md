@@ -21,7 +21,7 @@ The qualitative stopgap is this project's manual protocols — trigger tests, ad
 
 ## 2. Why this repo can do better — the specific assets
 
-1. **Small, closed skill set** — 27 `SKILL.md` files on disk (2026-08-03), enumerable in one directory listing. Exhaustive trigger-case coverage is actually feasible here, unlike open-ended prompt libraries.
+1. **Small, closed skill set** — run `(Get-ChildItem "$HOME\.claude\skills" -Directory).Count` for the current figure rather than trusting a hardcoded one (was 27 on 2026-08-03, already stale by 2026-09-15); still small enough that exhaustive trigger-case coverage is feasible, unlike open-ended prompt libraries.
 2. **Deterministic structural checkers already scripted** — `skills\claude-config-diagnostics\scripts\` (`doctor.ps1`, `lint-skills.ps1`, `check-dist.ps1`) settle the machine-checkable half; measurement effort goes only to behavior (interpretation guide: `claude-config-diagnostics`).
 3. **Headless mode as a test driver** — *headless mode* = running Claude Code non-interactively from a script. `claude-config-platform-reference` §7 doc-verified the flags: `-p/--print`, `--output-format json` (returns `result`, `session_id`, `total_cost_usd`), `--model`/`--effort` to pin the tier under test, `--bare` as the no-config baseline arm, `--allowedTools`/`--permission-mode` for unattended runs, `--max-budget-usd` as a spend cap. Cite that section; do not re-derive. Note: the binary lives at `$env:USERPROFILE\.local\bin\claude.exe` — not on PATH in sandboxed sessions.
 4. **A tested observability instrument for interactive sessions** — `claude-config-validation` §2 verified (2026-07-08) that session transcripts at `~/.claude/projects/<munged-cwd>/<session-id>.jsonl` record each skill load as `"name":"Skill","input":{"skill":"<name>"}`, greppable after the session. Whether headless runs leave the same trail is Step 2 below.
@@ -41,7 +41,7 @@ If a result is not written to a file, it never happened (the repo is git-backed 
 ## 5. First three concrete steps in this repo
 
 **Step 1 — trigger-recall case set. Status: `done`, baseline measured (entry #3: 33/33 both tiers; corpus 34 cases at entry #4, 38 as of 2026-08-03).**
-Artifact: `references\trigger-cases.md` in this folder — 38 cases as of 2026-08-03: 29 should-load phrasings (derived from the skills' real frontmatter descriptions), 4 discrimination probes between confusable siblings, 5 near-misses that should load nothing. Cases for new and changed descriptions are appended, never rewritten (append-only rule); coverage reached all 27 skills that way and only stays complete if every new skill gets its case appended — confirm that before quoting a recall number as full-set. The fixed corpus every future measurement reuses, so runs are comparable across time. Run protocol is owned by `claude-config-validation` §3 (fresh session per case, never type `/<name>`).
+Artifact: `references\trigger-cases.md` in this folder — 38 cases as of 2026-08-03: 29 should-load phrasings (derived from the skills' real frontmatter descriptions), 4 discrimination probes between confusable siblings, 5 near-misses that should load nothing. Cases for new and changed descriptions are appended, never rewritten (append-only rule); coverage reached full-set at 27 skills as of 2026-08-03 and only stays complete if every new skill gets its case appended — re-verify the current skill count against `references\trigger-cases.md`'s coverage before quoting any recall number as full-set (already out of sync by 2026-09-15). The fixed corpus every future measurement reuses, so runs are comparable across time. Run protocol is owned by `claude-config-validation` §3 (fresh session per case, never type `/<name>`).
 
 **Step 2 — observability for automated runs. Status: `resolved` (confirmed 2026-07-09, experiment-log entry #2).**
 Question was: can a script detect "skill X loaded" in a headless run? **Yes.** The pipeline below was run (two probes, model `claude-haiku-4-5`, ~$0.026 each) and the transcript carried both a `skill_listing` record (what was offered) and a `{"name":"Skill","input":{"skill":"<name>"}}` record when a skill loaded. Reproduce (PowerShell; needs a normal non-sandboxed shell):
@@ -83,7 +83,7 @@ Milestones are about measurements *existing*, not hitting invented targets — t
 
 ## Provenance and maintenance
 
-Written 2026-07-08 against the repo state on that date (25 SKILL.md files on disk — the last meta-layer siblings landed during authoring; local Claude Code 2.1.195). Current as of 2026-08-03: 27 SKILL.md files on disk, local Claude Code 2.1.220. Re-verify before trusting:
+Written 2026-07-08 against the repo state on that date (25 SKILL.md files on disk — the last meta-layer siblings landed during authoring; local Claude Code 2.1.195). Skill-file counts drift constantly (verified: no longer 27 as of 2026-09-15) — re-run the inventory one-liner below rather than trusting any snapshot; local Claude Code was 2.1.220 as of 2026-08-03. Re-verify before trusting:
 
 - Skill inventory (PowerShell): `(Get-ChildItem "$HOME\.claude\skills" -Directory).Count` and per-folder `Test-Path` of `SKILL.md` — then check `references\trigger-cases.md` still covers every description
 - Headless flags and binary: `claude-config-platform-reference` §7; `& "$env:USERPROFILE\.local\bin\claude.exe" --version` (PowerShell)

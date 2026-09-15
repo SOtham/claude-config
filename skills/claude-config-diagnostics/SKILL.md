@@ -40,7 +40,7 @@ Scripts travel inside the upload zip: `sync.ps1` packages each skill folder recu
 
 ## 3. Interpretation guide
 
-Real excerpts from the 2026-07-08 test runs (mid-authoring-campaign snapshots — folder counts were lower then; 25 folders as of 2026-07-09, **27 as of 2026-08-03**):
+Real excerpts from the 2026-07-08 test runs (mid-authoring-campaign snapshots — folder counts were lower then and have moved since; run `doctor.ps1`/`lint-skills.ps1` for the current count rather than trusting any number quoted here):
 
 ```
 == Check B: ~/.claude links ==

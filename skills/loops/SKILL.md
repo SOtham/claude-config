@@ -24,12 +24,11 @@ Patterns for recurring and long-running autonomous work: polling, watch loops, s
 
 ## Pacing (cache-aware)
 
-Prompt caches are prefix-based with ~5-minute TTLs; each wake past the TTL re-reads the whole conversation at full cost.
+Claude Code sessions run on a 1-hour prompt-cache TTL (drops to 5 min only under usage overage — don't track or preempt that, pace the same way regardless). Inside that hour there is no cache cliff to pace around: scheduling extra wakeups just to keep the cache warm is pure waste.
 
-- Actively watching something that resolves in minutes → poll inside the cache window (60–270s).
-- Nothing will change for a while → commit to long sleeps (20–30 min) so one cache miss buys a long wait.
-- Avoid sleeps right at the TTL boundary (~5 min): full cache-miss cost, minimal wait bought.
-- Match cadence to the watched process: an ~8-minute CI run wants two ~4-minute waits, not eight 1-minute polls.
+- Pick cadence from what you're actually waiting for, not from cache timing: an ~8-minute CI run wants one ~8-minute check, not eight 1-minute polls or a defensive short interval.
+- Idle ticks with no specific signal to watch → default to long waits (20–30 min); the loop still checks back regularly.
+- A wake past the 1-hour boundary forces a full-price rewrite of the whole accumulated context before the next read is cheap again — that's the cost of the gap itself, not something tighter polling fixes.
 
 ## Iteration hygiene
 

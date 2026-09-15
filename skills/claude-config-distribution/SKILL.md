@@ -74,7 +74,7 @@ What it does **not** do: it never deletes zips for skill folders that no longer 
 2. Go to claude.ai → **Settings → Capabilities → Skills**; upload (or replace) each changed `~/.claude\dist\<name>.zip`.
 3. Uploaded skills also load into Claude Code web sessions automatically (README) — this is the primary web route.
 
-Constraints (`description` ≤200 chars, naming coupling, etc.): one line each in `claude-config-platform-reference` — check there before authoring. The upload is **manual**, so claude.ai silently lags `skills/` until someone re-uploads; detect staleness with the dist checks in `claude-config-diagnostics`. Live example, re-verified 2026-07-09: `dist\` held 15 zips while `skills\` had 25 folders — the 10 new meta-layer skills existed locally but not on the web. Counts match again as of 2026-08-03 (27 folders, 27 zips), which proves only that `sync.ps1` ran; whether claude.ai holds those zips is not observable from disk, so track uploads separately.
+Constraints (`description` ≤200 chars, naming coupling, etc.): one line each in `claude-config-platform-reference` — check there before authoring. The upload is **manual**, so claude.ai silently lags `skills/` until someone re-uploads; detect staleness with the dist checks in `claude-config-diagnostics`. Live example, re-verified 2026-07-09: `dist\` held 15 zips while `skills\` had 25 folders — the 10 new meta-layer skills existed locally but not on the web. Counts have drifted again since (don't trust any hardcoded snapshot; compare `(Get-ChildItem skills -Directory).Count` against `(Get-ChildItem dist -Filter *.zip).Count` for the current gap) — matching counts prove only that `sync.ps1` ran; whether claude.ai holds those zips is not observable from disk, so track uploads separately.
 
 ## 5. Environment traps (distribution-relevant)
 
@@ -102,7 +102,7 @@ Constraints (`description` ≤200 chars, naming coupling, etc.): one line each i
 
 ## Provenance and maintenance
 
-Written 2026-07-08 against the live system (links inspected, creation commands tested unelevated in the session scratchpad); inventory re-verified 2026-08-03: 27 skill folders, 27 zips in dist. Counts drift — re-run the one-liners below rather than trusting the snapshot:
+Written 2026-07-08 against the live system (links inspected, creation commands tested unelevated in the session scratchpad). Skill-folder and zip counts drift constantly (verified: no longer 27/27 as of 2026-09-15) — re-run the one-liners below for the current count rather than quoting a snapshot here:
 
 - Link types and targets (PowerShell): `Get-ChildItem "$HOME\.claude" -Force | Select-Object Name, LinkType, Target`
 - Symlink privilege behavior: re-run `New-Item -ItemType SymbolicLink` and `cmd /c mklink` on throwaway paths in a scratch directory — never against `~/.claude`
